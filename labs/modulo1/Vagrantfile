@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Laboratorio compartido — Módulo I (Anexo A, Sección 7)
+# Usado por: A.3 (Wireshark/tcpdump), A.4 (Nmap), A.7 (iptables/nftables/UFW),
+#            A.8 (Suricata) y como red objetivo para A.6 (pfSense).
+# Ver README.md para topología, credenciales de laboratorio y mapeo a cada actividad.
+
+Vagrant.configure("2") do |config|
+  # --- dmz-ubuntu: host "rico en servicios" de la DMZ ---
+  config.vm.define "dmz-ubuntu" do |dmz|
+    dmz.vm.box = "cloud-image/ubuntu-24.04"
+    dmz.vm.hostname = "dmz-ubuntu"
+
+    dmz.vm.network "private_network",
+      ip: "192.168.56.10",
+      virtualbox__intnet: "dmz_net"
+
+    dmz.vm.provider "virtualbox" do |vb|
+      vb.name = "modulo1-dmz-ubuntu"
+      vb.memory = 1024
+      vb.cpus = 1
+    end
+
+    dmz.vm.provision "shell", path: "provision/dmz-ubuntu.sh"
+  end
+
+  # --- int-alpine: host mínimo de la LAN interna ---
+  config.vm.define "int-alpine" do |lan|
+    lan.vm.box = "generic/alpine319"
+    lan.vm.hostname = "int-alpine"
+
+    lan.vm.network "private_network",
+      ip: "192.168.57.10",
+      virtualbox__intnet: "lan_net"
+
+    lan.vm.provider "virtualbox" do |vb|
+      vb.name = "modulo1-int-alpine"
+      vb.memory = 256
+      vb.cpus = 1
+    end
+
+    lan.vm.provision "shell", path: "provision/int-alpine.sh"
+  end
+end
