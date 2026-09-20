@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dev.nordlysai.dk — staging</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="/assets/css/style.css">
+<!-- Sitio FICTICIO para el laboratorio del Modulo I (UAM, Ciberdefensa Avanzada). -->
+<style>
+  body { background: #fffbe9; }
+  .warn { background: #fff3cd; border: 1px solid #e0c675; border-radius: 9px; padding: 20px 22px; margin-bottom: 26px; }
+  .warn strong { color: #7a5c00; }
+  code { background: #f1f1eb; padding: 1px 5px; border-radius: 4px; font-size: 13.5px; }
+</style>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="logo" href="/"><span class="mark"></span>Nordlys&nbsp;AI <span style="font-weight:400;color:#d8542f">/ staging</span></a>
+</div></header>
+
+<section><div class="wrap" style="max-width:780px">
+  <div class="warn">
+    <strong>Staging-milj&oslash; &mdash; ikke produktion.</strong>
+    Denne vhost (<code>dev.nordlysai.dk</code>) er ikke oprettet i offentlig DNS og svarer
+    kun, n&aring;r Host-headeren s&aelig;ttes manuelt. Den skulle have v&aelig;ret lukket ved
+    release 3.4.0 (NOR-1502).
+  </div>
+
+  <h1>Nordlys AI &mdash; preview-milj&oslash;</h1>
+  <p class="sub">Her deployes <code>main</code> automatisk ved hvert commit, f&oslash;r vi
+  promoverer til produktion. Data er en anonymiseret kopi af produktionsdatabasen fra
+  natten f&oslash;r.</p>
+
+  <div class="card">
+    <h3>Build-information</h3>
+    <table class="data">
+      <tr><th>Milj&oslash;</th><td>staging</td></tr>
+      <tr><th>Bundle</th><td>web-public 3.5.0-rc2</td></tr>
+      <tr><th>Commit</th><td><code>c41d8ee</code> (main)</td></tr>
+      <tr><th>Deployet</th><td>2026-02-11 10:44 CET af <code>gitlab-runner</code></td></tr>
+      <tr><th>Docroot</th><td><code>/var/www/nordlys-staging</code></td></tr>
+      <tr><th>Debug</th><td>NORDLYS_DEBUG=1 (aktiv)</td></tr>
+      <tr><th>Preview-token</th><td><code>FLAG{nordlys_vhost_staging_af26}</code></td></tr>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Kendte forskelle fra produktion</h3>
+    <ul>
+      <li>Lead-formularen skriver til <code>leads_staging</code> og sender ingen mails.</li>
+      <li>Analytics er sl&aring;et fra.</li>
+      <li><code>/internal-tools/</code> k&oslash;rer her uden login &mdash; skal rettes inden promovering.</li>
+    </ul>
+  </div>
+
+  <p style="margin-top:24px"><a href="/index.html">&lsaquo; Til produktionssitet</a></p>
+</div></section>
+</body>
+</html>

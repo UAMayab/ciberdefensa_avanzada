@@ -1,0 +1,56 @@
+; Zona directa de nordlysai.dk — laboratorio Módulo I (Anexo A)
+; Usada por A.2 (reconocimiento). Empresa y dominio ficticios.
+;
+; Todo registro de este archivo existe porque algún archivo del sitio lo
+; menciona: .env, .git/config, assets/js/*.js, /internal-tools/ o el respaldo
+; de uploads/. Nada es decorativo — el reconocimiento tiene que poder pivotar
+; entre el sitio web y el DNS en ambas direcciones.
+$TTL 3600
+$ORIGIN nordlysai.dk.
+
+@       IN  SOA ns1.nordlysai.dk. hostmaster.nordlysai.dk. (
+                2026091801 ; serial
+                3600       ; refresh
+                900        ; retry
+                604800     ; expire
+                3600 )     ; minimum negativo
+
+@       IN  NS   ns1.nordlysai.dk.
+@       IN  MX   10 smtp.nordlysai.dk.
+@       IN  A    192.168.56.10
+
+; --- Correo: SPF, DMARC y verificación de proveedor ----------------------
+; El token de verificación delata que RR. HH. usa Zenegy: el mismo sistema
+; del que salió uploads/medarbejderliste-eksport.csv (ver su cabecera).
+@       IN  TXT  "v=spf1 mx include:_spf.zenegy.com -all"
+@       IN  TXT  "zenegy-domain-verification=FLAG{nordlys_dns_txt_record_9c41}"
+_dmarc  IN  TXT  "v=DMARC1; p=none; rua=mailto:dpo@nordlysai.dk"
+
+; --- Hosts públicos ------------------------------------------------------
+ns1     IN  A    192.168.56.20
+www     IN  A    192.168.56.10
+api     IN  A    192.168.56.10      ; app.js -> https://api.nordlysai.dk/v2
+stats   IN  A    192.168.56.10      ; analytics.js -> Plausible autohospedado
+smtp    IN  A    192.168.56.10      ; .env -> MAIL_HOST
+
+; OJO: 'dev' NO está aquí, y es deliberado. El propio sitio afirma en tres
+; lugares que dev.nordlysai.dk "no está en DNS público" y que sólo responde
+; fijando la cabecera Host a mano. Encontrarlo exige fuzzing de vhost, no DNS.
+; Es la lección: el DNS no te enseña todo lo que hay publicado.
+
+; --- Host olvidado, no enlazado en ninguna parte del sitio ---------------
+; Sólo aparece por transferencia de zona o por fuerza bruta de subdominios.
+vpn-legacy  IN  A   192.168.57.60
+vpn-legacy  IN  TXT "FLAG{nordlys_zone_transfer_0d7e}"
+
+; --- Espacio de nombres interno ------------------------------------------
+; Los seis primeros nombres salen literalmente de .env, .git/config,
+; /internal-tools/index.html y de config/settings.ini dentro del respaldo.
+internal              IN  TXT "kun internt - ikke offentligt. FLAG{nordlys_internal_zone_5a38}"
+db-prod-01.internal   IN  A   192.168.57.20
+db-legacy-01.internal IN  A   192.168.57.21
+git.internal          IN  A   192.168.57.22
+dmz-web-01.internal   IN  A   192.168.56.10
+mlflow.internal       IN  A   192.168.57.23
+wiki.internal         IN  A   192.168.57.24
+backup-01.internal    IN  A   192.168.56.30

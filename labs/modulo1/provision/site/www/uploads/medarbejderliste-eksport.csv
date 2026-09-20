@@ -1,0 +1,19 @@
+# Eksport fra HR-systemet (Zenegy) 2026-02-09 — INTERN, ma ikke deles
+# Eksporteret af: ingrid.moller@nordlysai.dk
+# Eksport-ID: FLAG{nordlys_csv_export_d13c}
+medarbejder_id,fornavn,efternavn,email,brugernavn,afdeling,titel,kontor,ansat_siden,telefon
+1001,Astrid,Lindqvist,astrid.lindqvist@nordlysai.dk,alindqvist,Ledelse,CEO,Kobenhavn,2019-03-14,+45 33 18 42 71
+1002,Mikkel,Sorensen,mikkel.sorensen@nordlysai.dk,msorensen,Ledelse,CTO,Kobenhavn,2019-03-14,+45 33 18 42 72
+1014,Freja,Holm,freja.holm@nordlysai.dk,fholm,Engineering,VP Engineering,Kobenhavn,2020-08-03,+45 33 18 42 74
+1021,Jonas,Bak,jonas.bak@nordlysai.dk,jbak,Platform,Head of MLOps,Kobenhavn,2021-01-11,+45 33 18 42 75
+1027,Sofie,Kjaer,sofie.kjaer@nordlysai.dk,skjaer,Data Science,Lead Data Scientist,Kobenhavn,2021-05-17,+45 33 18 42 76
+1033,Rasmus,Dahl,rasmus.dahl@nordlysai.dk,rdahl,Security,Head of Security & Compliance,Kobenhavn,2021-09-06,+45 33 18 42 77
+1038,Ingrid,Moller,ingrid.moller@nordlysai.dk,imoller,People,Head of People,Kobenhavn,2022-02-14,+45 33 18 42 79
+1041,Lars,Thomsen,lars.thomsen@nordlysai.dk,lthomsen,Engineering,Principal Engineer,Aarhus,2022-04-04,+45 33 18 42 80
+1055,Nadia,Bergstrom,nadia.bergstrom@nordlysai.dk,nbergstrom,Sales,Country Manager SE,Stockholm,2024-01-08,+46 8 525 099 41
+1058,Emil,Krogh,emil.krogh@nordlysai.dk,ekrogh,Data Engineering,Senior Data Engineer,Aarhus,2024-03-18,+45 33 18 42 82
+1061,Mette,Bruun,mette.bruun@nordlysai.dk,mbruun,Engineering,ML Engineer,Kobenhavn,2024-08-19,+45 33 18 42 83
+1064,Anders,Holmgaard,anders.holmgaard@nordlysai.dk,aholmgaard,Platform,Site Reliability Engineer,Kobenhavn,2025-02-03,+45 33 18 42 84
+1067,Katrine,Vinther,katrine.vinther@nordlysai.dk,kvinther,Compliance,AI Compliance Consultant,Kobenhavn,2025-06-16,+45 33 18 42 85
+1070,Oskar,Lindberg,oskar.lindberg@nordlysai.dk,olindberg,Data Science,Data Scientist,Stockholm,2025-09-01,+46 8 525 099 43
+1072,Simon,Faber,simon.faber@nordlysai.dk,sfaber,IT,IT & Support,Kobenhavn,2025-11-10,+45 33 18 42 70

@@ -1,0 +1,20 @@
+; Zona inversa de 192.168.56.0/24 — laboratorio Módulo I (Anexo A)
+; Usada por A.2. El PTR de .30 revela un host que no está enlazado en el
+; sitio, y el TXT que lo acompaña sólo se alcanza consultando la propia zona
+; inversa: las zonas inversas también pueden llevar otros registros.
+$TTL 3600
+$ORIGIN 56.168.192.in-addr.arpa.
+
+@   IN  SOA ns1.nordlysai.dk. hostmaster.nordlysai.dk. (
+            2026091801 ; serial
+            3600       ; refresh
+            900        ; retry
+            604800     ; expire
+            3600 )     ; minimum negativo
+
+@   IN  NS  ns1.nordlysai.dk.
+
+10  IN  PTR dmz-web-01.internal.nordlysai.dk.
+20  IN  PTR ns1.nordlysai.dk.
+30  IN  PTR backup-01.internal.nordlysai.dk.
+30  IN  TXT "FLAG{nordlys_reverse_dns_b6f2}"

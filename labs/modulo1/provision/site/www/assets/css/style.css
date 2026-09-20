@@ -1,0 +1,81 @@
+/* Nordlys AI ApS — hovedstilark. Bygget 2026-02. */
+:root {
+  --ink: #101b2d;
+  --ink-soft: #46556e;
+  --paper: #ffffff;
+  --mist: #f4f6fa;
+  --line: #dde3ec;
+  --aurora: #0f6f6a;
+  --aurora-dark: #0a4f4b;
+  --accent: #d8542f;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.6;
+}
+a { color: var(--aurora-dark); }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+/* Topbar */
+.topbar { background: var(--ink); color: #cfd8e6; font-size: 13px; }
+.topbar .wrap { display: flex; justify-content: space-between; padding: 6px 24px; }
+.topbar a { color: #cfd8e6; text-decoration: none; }
+
+/* Header */
+header.site { border-bottom: 1px solid var(--line); background: var(--paper); }
+header.site .wrap { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); }
+.logo .mark { width: 26px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, var(--aurora) 0%, #3ba6a0 55%, #8fd6c4 100%); }
+nav.main a { margin-left: 22px; text-decoration: none; color: var(--ink-soft); font-size: 15px; font-weight: 500; }
+nav.main a:hover, nav.main a.on { color: var(--aurora-dark); }
+.cta { background: var(--aurora); color: #fff !important; padding: 9px 16px; border-radius: 6px; font-weight: 600; }
+
+/* Hero + sections */
+.hero { background: var(--mist); border-bottom: 1px solid var(--line); padding: 64px 0; }
+.hero h1 { font-size: 40px; line-height: 1.15; margin: 0 0 14px; letter-spacing: -0.02em; max-width: 18em; }
+.hero p.lead { font-size: 18px; color: var(--ink-soft); max-width: 40em; margin: 0 0 24px; }
+.eyebrow { text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; font-weight: 700; color: var(--aurora); margin: 0 0 10px; }
+section { padding: 52px 0; }
+section.alt { background: var(--mist); }
+h2 { font-size: 27px; letter-spacing: -0.01em; margin: 0 0 8px; }
+h3 { font-size: 18px; margin: 0 0 6px; }
+.sub { color: var(--ink-soft); max-width: 44em; margin: 0 0 28px; }
+.grid { display: grid; gap: 22px; }
+.g2 { grid-template-columns: repeat(2, 1fr); }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 22px; }
+.card p { color: var(--ink-soft); font-size: 15px; margin: 0; }
+.stat { font-size: 34px; font-weight: 700; color: var(--aurora-dark); letter-spacing: -0.02em; }
+.stat + span { color: var(--ink-soft); font-size: 14px; }
+.tag { display: inline-block; background: var(--mist); border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; font-size: 12.5px; color: var(--ink-soft); margin: 0 6px 6px 0; }
+table.data { width: 100%; border-collapse: collapse; font-size: 15px; }
+table.data th, table.data td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+table.data th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+blockquote { margin: 0; border-left: 3px solid var(--aurora); padding-left: 18px; font-size: 17px; color: var(--ink); }
+.crumbs { font-size: 13px; color: var(--ink-soft); padding: 14px 0 0; }
+.person .ph { width: 100%; aspect-ratio: 1/1; border-radius: 9px; background: linear-gradient(160deg, #dbe6e5, #b9cfcc); margin-bottom: 12px; }
+.person .role { color: var(--aurora-dark); font-size: 14px; font-weight: 600; }
+.person .mail { font-size: 13px; color: var(--ink-soft); word-break: break-all; }
+.job { border: 1px solid var(--line); border-radius: 9px; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 12px; }
+form.contact label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 5px; }
+form.contact input, form.contact textarea, form.contact select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+form.contact button { margin-top: 18px; background: var(--aurora); color: #fff; border: 0; padding: 11px 22px; border-radius: 6px; font-weight: 600; font-size: 15px; cursor: pointer; }
+
+/* Footer */
+footer.site { background: var(--ink); color: #9fb0c6; padding: 44px 0 26px; font-size: 14px; margin-top: 16px; }
+footer.site a { color: #cfd8e6; text-decoration: none; }
+footer.site h4 { color: #fff; font-size: 13px; text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 12px; }
+footer.site ul { list-style: none; padding: 0; margin: 0; }
+footer.site li { margin-bottom: 7px; }
+.legal { border-top: 1px solid #22314a; margin-top: 30px; padding-top: 18px; display: flex; justify-content: space-between; gap: 16px; font-size: 12.5px; }
+@media (max-width: 860px) {
+  .g3, .g4, .g2 { grid-template-columns: 1fr; }
+  nav.main { display: none; }
+  .hero h1 { font-size: 30px; }
+  .legal { flex-direction: column; }
+}

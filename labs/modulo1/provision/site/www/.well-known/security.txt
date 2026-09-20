@@ -1,0 +1,16 @@
+# Nordlys AI ApS — koordineret sarbarhedsindberetning
+# https://www.nordlysai.dk/.well-known/security.txt
+
+Contact: mailto:security@nordlysai.dk
+Contact: mailto:rasmus.dahl@nordlysai.dk
+Contact: tel:+45-33-18-42-70
+Expires: 2027-01-31T23:59:00.000Z
+Encryption: https://www.nordlysai.dk/.well-known/pgp-key.txt
+Preferred-Languages: da, en, sv
+Canonical: https://www.nordlysai.dk/.well-known/security.txt
+Policy: https://www.nordlysai.dk/privacy.html
+Hiring: https://www.nordlysai.dk/careers.html
+
+# Vi anerkender modtagelse inden for to arbejdsdage. Ingen bug bounty,
+# men vi krediterer gerne i vores hall of fame.
+# Reference til brug i indberetninger: FLAG{nordlys_security_txt_9d4b}

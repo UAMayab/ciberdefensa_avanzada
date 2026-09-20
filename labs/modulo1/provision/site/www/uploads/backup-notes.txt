@@ -1,0 +1,22 @@
+Nordlys AI — driftsnoter, webserver (dmz-web-01)
+================================================
+Ejer: jonas.bak@nordlysai.dk
+Sidst rettet: 2026-02-11
+
+Denne mappe bruges til midlertidige filer under deploy. Den er ikke
+beregnet til offentlig adgang — autoindex blev slaet til under
+fejlsogningen i januar og er aldrig blevet slaet fra igen (NOR-1498).
+
+Filer her lige nu:
+  nordlys-ai-whitepaper-2026.pdf      offentlig, linket fra footeren
+  medarbejderliste-eksport.csv        INTERN — eksport fra HR, skal slettes
+  site-backup-2024.tar.gz             gammel kopi af sitet, kan arkiveres
+
+Huskeliste inden release 3.5 (NOR-1493 / NOR-1498):
+  - autoindex off;  i nginx-konfigurationen
+  - slet .env fra webroden
+  - slet index.html.bak
+  - flyt /internal-tools/ bag SSO
+  - fjern .git fra deploy-artefaktet
+
+Reference til denne note: FLAG{nordlys_dir_listing_b982}

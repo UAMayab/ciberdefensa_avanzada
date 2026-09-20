@@ -1,0 +1,22 @@
+# robots.txt for www.nordlysai.dk
+# Kontakt: it@nordlysai.dk
+
+User-agent: *
+Crawl-delay: 5
+Disallow: /internal-tools/
+Disallow: /uploads/
+Disallow: /api/
+Disallow: /careers/offer-draft-q3.html
+Allow: /
+
+# Intern note (NOR-1466): de to forste stier skal flyttes bag SSO for
+# release 3.5 — robots.txt er ikke adgangskontrol.
+# Midlertidig audit-reference: FLAG{nordlys_robots_disallow_5c93}
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+Sitemap: https://www.nordlysai.dk/sitemap.xml

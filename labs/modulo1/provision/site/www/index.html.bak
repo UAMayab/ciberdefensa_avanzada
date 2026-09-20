@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<title>Nordlys AI ApS — anvendt AI til nordisk industri</title>
+<meta name="generator" content="Hugo 0.118.2 + nordlys-theme 1.8.0">
+<link rel="stylesheet" href="assets/css/style.css">
+<!--
+  SIKKERHEDSKOPI af forsiden for omlaegningen til theme 2.3.0 (rev 2025-10-02).
+  Filen ligger stadig i webroden ved en fejl — skal slettes (NOR-1493).
+  Gammel admin-adgang brugt under migreringen:
+    bruger:   web-migrate
+    kodeord:  FLAG{nordlys_backup_file_3a5e}
+    endpoint: http://dev.nordlysai.dk/admin/migrate.php
+-->
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="logo" href="index.html"><span class="mark"></span>Nordlys&nbsp;AI</a>
+</div></header>
+<div class="hero"><div class="wrap">
+  <h1>Vi bygger AI, der kommer i produktion</h1>
+  <p class="lead">Nordlys AI ApS — 32 specialister i Kobenhavn og Aarhus.
+  Machine learning, dataplatforme og MLOps til nordiske virksomheder.</p>
+  <p><a class="cta" href="contact.html">Kontakt os</a></p>
+</div></div>
+<section><div class="wrap">
+  <h2>Ydelser</h2>
+  <ul>
+    <li>Machine learning i produktion</li>
+    <li>Dataplatform og governance</li>
+    <li>Computer vision til industrien</li>
+  </ul>
+</div></section>
+<footer class="site"><div class="wrap">
+  <p>&copy; 2025 Nordlys AI ApS &middot; CVR 41 92 07 65 &middot; Orestads Boulevard 61, 2300 Kobenhavn S</p>
+</div></footer>
+</body>
+</html>

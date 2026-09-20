@@ -220,3 +220,14 @@ __marimo__/
 # Course documents
 *.pdf
 *.docx
+
+# Course materials (local only)
+resources/
+slides/
+sources/
+prompt
+instructor/
+playground/
+
+# Vagrant local state (machine IDs, keys, box metadata)
+.vagrant/

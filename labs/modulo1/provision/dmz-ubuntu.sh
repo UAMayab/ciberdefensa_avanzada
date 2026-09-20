@@ -19,8 +19,30 @@ fi
 # visible en Wireshark. Config por defecto del paquete ya lo permite.
 systemctl enable --now vsftpd
 
-# nginx con página por defecto: tráfico HTTP/DNS para A.3/A.4.
+# nginx: sirve el sitio web ficticio de "Nordlys AI ApS", objetivo de la
+# actividad de reconocimiento (ver "Sitio web de práctica" y "Banderas" en
+# README.md). Los archivos los sube el provisionador "file" del Vagrantfile.
+SRC=/tmp/nordlys-site
+[ -d "$SRC/www" ] || SRC=/tmp/nordlys-site/site   # tolera una re-subida anidada
+
+if [ -d "$SRC/www" ]; then
+  rm -rf /var/www/nordlys /var/www/nordlys-staging
+  cp -r "$SRC/www"         /var/www/nordlys
+  cp -r "$SRC/www-staging" /var/www/nordlys-staging
+  chown -R root:root /var/www/nordlys /var/www/nordlys-staging
+  find /var/www/nordlys /var/www/nordlys-staging -type d -exec chmod 755 {} +
+  find /var/www/nordlys /var/www/nordlys-staging -type f -exec chmod 644 {} +
+
+  install -m 644 "$SRC/nginx-nordlys.conf" /etc/nginx/sites-available/nordlys
+  ln -sf /etc/nginx/sites-available/nordlys /etc/nginx/sites-enabled/nordlys
+  rm -f /etc/nginx/sites-enabled/default   # su "default_server" chocaría con el nuestro
+  nginx -t
+else
+  echo "[modulo1] AVISO: no se encontró el sitio en /tmp/nordlys-site; se deja nginx por defecto" >&2
+fi
+
 systemctl enable --now nginx
+systemctl reload nginx
 
 # ufw queda instalado pero inactivo: los estudiantes lo activan y configuran en A.7.
 ufw --force disable

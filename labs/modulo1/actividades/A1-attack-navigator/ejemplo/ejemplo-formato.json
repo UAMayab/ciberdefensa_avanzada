@@ -1,0 +1,69 @@
+{
+  "name": "A.1 EJEMPLO DE FORMATO - extracto de la demo",
+  "description": "EXTRACTO (4 de 9 tecnicas) de la capa construida en la demo de la Sesion 1, para que veas la forma de un archivo de capa valido. Caso: Volt Typhoon, CISA AA24-038A - https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a . El score es la CONFIANZA del mapeo y el comentario lleva siempre la frase que lo sustenta. No es la solucion de ningun caso de la actividad: Volt Typhoon no esta en casos-sugeridos.md.",
+  "domain": "enterprise-attack",
+  "versions": {
+    "layer": "4.5",
+    "attack": "19",
+    "navigator": "5.3.2"
+  },
+  "techniques": [
+    {
+      "techniqueID": "T1190",
+      "score": 3,
+      "comment": "EVIDENCIA: «Volt Typhoon typically gains initial access to the IT network by exploiting known or zero-day vulnerabilities in public-facing network appliances (e.g., routers, virtual private networks [VPNs], and firewalls).» — CISA AA24-038A\nCONFIANZA 3 (EXPLICITA): Acceso inicial explotando un servicio expuesto: es literalmente la definicion de T1190.",
+      "showSubtechniques": true
+    },
+    {
+      "techniqueID": "T1078.002",
+      "score": 3,
+      "comment": "EVIDENCIA: «Volt Typhoon relies primarily on valid credentials for persistence.» — CISA AA24-038A\nCONFIANZA 3 (EXPLICITA): Persistencia sin malware: la cuenta legitima ES el implante. Se baja a la sub-tecnica .002 porque el reporte habla de cuentas de dominio.",
+      "showSubtechniques": true
+    },
+    {
+      "techniqueID": "T1021.001",
+      "score": 3,
+      "comment": "EVIDENCIA: «Volt Typhoon uses valid administrator credentials to move laterally to the domain controller (DC) and other devices via remote access services such as Remote Desktop Protocol (RDP).» — CISA AA24-038A\nCONFIANZA 3 (EXPLICITA): El reporte nombra el protocolo, asi que corresponde la sub-tecnica .001 (RDP) y no solo T1021.",
+      "showSubtechniques": true
+    },
+    {
+      "techniqueID": "T1003.003",
+      "score": 3,
+      "comment": "EVIDENCIA: «Volt Typhoon achieves full domain compromise by extracting the Active Directory database (NTDS.dit) from the DC.» — CISA AA24-038A\nCONFIANZA 3 (EXPLICITA): Nombra el artefacto exacto (NTDS.dit), que es justo lo que distingue a la sub-tecnica .003 dentro de T1003.",
+      "showSubtechniques": true
+    }
+  ],
+  "gradient": {
+    "colors": [
+      "#fff3cd",
+      "#fd8d3c",
+      "#bd0026"
+    ],
+    "minValue": 1,
+    "maxValue": 3
+  },
+  "legendItems": [
+    {
+      "label": "3 - Explicita: el reporte nombra el comportamiento",
+      "color": "#bd0026"
+    },
+    {
+      "label": "2 - Implicita: se deduce con seguridad del texto",
+      "color": "#fd8d3c"
+    },
+    {
+      "label": "1 - Inferida: lectura razonable, no afirmada",
+      "color": "#fff3cd"
+    }
+  ],
+  "showTacticRowBackground": true,
+  "tacticRowBackground": "#205b8f",
+  "selectTechniquesAcrossTactics": true,
+  "selectSubtechniquesWithParent": false,
+  "hideDisabled": false,
+  "layout": {
+    "layout": "side",
+    "showName": true,
+    "showID": true
+  }
+}
