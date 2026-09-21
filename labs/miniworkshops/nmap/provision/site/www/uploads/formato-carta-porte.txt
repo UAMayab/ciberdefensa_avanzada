@@ -1,0 +1,3 @@
+FORMATO CARTA PORTE - version 3.1 (plantilla en blanco)
+Remitente: ______________________  RFC: ____________
+Destinatario: ___________________  RFC: ____________

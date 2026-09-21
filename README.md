@@ -58,6 +58,18 @@ con su laboratorio reproducible en [`labs/`](labs/):
 - [`labs/modulo1/`](labs/modulo1/) — entorno Vagrant para las actividades
   prácticas del Módulo I.
 
+## 🔬 Miniworkshops
+
+Además de las actividades de cada módulo, hay series de **especialización en
+una sola herramienta**, de cero a experto, en
+[`labs/miniworkshops/`](labs/miniworkshops/). No se califican y se recorren al
+ritmo de cada quien.
+
+- [`labs/miniworkshops/nmap/`](labs/miniworkshops/nmap/) — **Nmap de cero a
+  experto**: tres episodios que terminan escribiendo un script NSE propio, un
+  apéndice de tcpdump y un laboratorio de dos VMs con siete servicios
+  vulnerables.
+
 ## ⚠️ Uso ético
 
 Todo el material y los laboratorios de este repositorio son de uso exclusivo

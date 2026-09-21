@@ -1,0 +1,6 @@
+Notas de la migracion del portal (J. Canul, noviembre 2024)
+- El .env quedo en el docroot, hay que moverlo arriba de public/. PENDIENTE.
+- Redis lo cambie del 6379 al 16379 para que no lo encuentren los escaneos.
+- El FTP sigue aceptando anonimo porque la agencia de Tampa lo pidio asi.
+- SNMP quedo con community public, lo dejo para que el monitoreo no truene.
+- El certificado de la intranet caduco en enero, nadie lo ha renovado.

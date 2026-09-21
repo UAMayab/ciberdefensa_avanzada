@@ -1,0 +1,22 @@
+/* Aurora Maritima S.A. de C.V. — hoja de estilo del sitio de laboratorio. */
+:root{--tinta:#12232e;--papel:#f7f9fa;--mar:#1c6e8c;--borde:#d7e0e5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel);color:var(--tinta);
+  font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+.topbar{background:var(--tinta);color:#fff;padding:14px 0;margin-bottom:32px}
+.topbar .wrap{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:.02em}
+nav a{color:#c9dbe4;text-decoration:none;margin-right:16px}
+nav a:hover{color:#fff}
+h1{font-size:2rem;line-height:1.2;margin:.2em 0}
+.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;color:var(--mar);margin:0}
+.lead{font-size:1.1rem;max-width:62ch}
+.grid{display:flex;gap:20px;flex-wrap:wrap;margin:32px 0}
+.card{flex:1 1 260px;background:#fff;border:1px solid var(--borde);
+  border-radius:8px;padding:18px}
+.card h3{margin-top:0;color:var(--mar)}
+table{border-collapse:collapse;width:100%;background:#fff}
+th,td{border:1px solid var(--borde);padding:8px 10px;text-align:left}
+footer{border-top:1px solid var(--borde);margin-top:48px;padding:20px 0;
+  font-size:.85rem;color:#5a6b74}

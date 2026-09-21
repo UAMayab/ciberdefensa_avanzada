@@ -1,0 +1,3 @@
+quitar credenciales del config antes de publicar
+
+pendiente: rotar la contrasena de despliegue y sacar el .env del docroot

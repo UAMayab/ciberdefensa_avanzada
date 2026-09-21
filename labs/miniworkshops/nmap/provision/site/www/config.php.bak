@@ -1,0 +1,11 @@
+<?php
+// Aurora Maritima - respaldo del 2024-11-03 antes de migrar a .env
+// FICTICIO. Dejado en el docroot por accidente: eso es el hallazgo.
+define('DB_HOST', '127.0.0.1');
+define('DB_NAME', 'aurora_rastreo');
+define('DB_USER', 'root');
+define('DB_PASS', '');            // pendiente: poner contrasena antes de salir a produccion
+define('ADMIN_USER', 'admin');
+define('ADMIN_PASS', 'letmein');  // panel /admin/
+define('REDIS_PORT', 16379);       // movido del 6379 "para que no lo encuentren"
+?>

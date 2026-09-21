@@ -229,6 +229,8 @@ Cada actividad sigue la misma estructura: **objetivo de comprensión** (qué ent
 
 **Entorno técnico:** [`labs/modulo1/`](labs/modulo1/) — escanear `192.168.56.10` (`dmz-ubuntu`: 22/80/21) y `192.168.57.10` (`int-alpine`: 22/23) para comparar perfiles de servicios.
 
+> **Para quien quiera profundizar (opcional, no calificado):** el miniworkshop [`labs/miniworkshops/nmap/`](labs/miniworkshops/nmap/) recorre Nmap de cero a experto en tres episodios —descubrimiento y estados de puerto, detección de servicios y evasión, y NSE hasta escribir un script propio— sobre su propio laboratorio de dos VMs. No sustituye a esta actividad ni añade entregables.
+
 ---
 
 ### A.5 — Simulación de topologías: GNS3 / EVE-NG

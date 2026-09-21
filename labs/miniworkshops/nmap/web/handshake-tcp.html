@@ -1,0 +1,704 @@
+<meta charset="utf-8">
+<title>Banderas TCP en un escaneo</title>
+<!--
+  Miniworkshop «Nmap de cero a experto» — apoyo visual de los Episodios 1 y 2.
+  Certificación en Ciberdefensa Avanzada, Universidad Anáhuac Mayab.
+
+  Los ocho escenarios son capturas REALES tomadas con tcpdump en la VM
+  nmap-target (192.168.60.10) mientras se escaneaba desde 192.168.60.1.
+  Autocontenido: no necesita servidor ni conexión a Internet.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+:root{
+  --fondo:#eef2f5; --panel:#ffffff; --panel-2:#f6f9fb;
+  --tinta:#0f1720; --tenue:#5d6e7c; --regla:#d3dde4;
+  --escaner:#0b6e7f; --escaner-suave:#d7ecef;
+  --objetivo:#b4531d; --objetivo-suave:#f7e3d4;
+  --abierto:#1a7a4c; --cerrado:#a52a2a; --filtrado:#8a6a16; --ambiguo:#5f5aa3;
+  --apagado:#c3cfd8;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --fondo:#0c1217; --panel:#121b22; --panel-2:#18242c;
+    --tinta:#dfe9f0; --tenue:#8398a8; --regla:#22303a;
+    --escaner:#3fb6cc; --escaner-suave:#123039;
+    --objetivo:#e08a4e; --objetivo-suave:#33210f;
+    --abierto:#3fb87a; --cerrado:#e06a6a; --filtrado:#d4aa46; --ambiguo:#9b95e0;
+    --apagado:#2c3b46;
+  }
+}
+:root[data-theme="dark"]{
+  --fondo:#0c1217; --panel:#121b22; --panel-2:#18242c;
+  --tinta:#dfe9f0; --tenue:#8398a8; --regla:#22303a;
+  --escaner:#3fb6cc; --escaner-suave:#123039;
+  --objetivo:#e08a4e; --objetivo-suave:#33210f;
+  --abierto:#3fb87a; --cerrado:#e06a6a; --filtrado:#d4aa46; --ambiguo:#9b95e0;
+  --apagado:#2c3b46;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--fondo); color:var(--tinta);
+  font-family:var(--sans); font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.envoltorio{max-width:940px; margin:0 auto; padding-inline:16px; padding-block:28px 56px}
+
+/* ---------------- cabecera ---------------- */
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--escaner); margin:0 0 6px;
+}
+h1{
+  font-size:clamp(1.55rem,4.4vw,2.2rem); line-height:1.15; margin:0 0 10px;
+  font-weight:700; letter-spacing:-.02em; text-wrap:balance;
+}
+.entradilla{margin:0; color:var(--tenue); max-width:64ch}
+.entradilla code{font-family:var(--mono); font-size:.88em; color:var(--tinta)}
+
+/* ---------------- selector de escenario ---------------- */
+.selector{margin:26px 0 0}
+.selector h2{
+  font-size:11px; font-family:var(--mono); letter-spacing:.13em;
+  text-transform:uppercase; color:var(--tenue); margin:0 0 10px; font-weight:500;
+}
+.chips{display:flex; gap:7px; overflow-x:auto; padding-bottom:6px; scrollbar-width:thin}
+.chip{
+  flex:0 0 auto; display:flex; flex-direction:column; gap:1px; align-items:flex-start;
+  background:var(--panel); border:1px solid var(--regla); border-radius:7px;
+  padding:7px 12px; cursor:pointer; color:var(--tinta); font-family:var(--sans);
+  font-size:13px; line-height:1.3; white-space:nowrap; transition:border-color .15s,background .15s;
+}
+.chip:hover{border-color:var(--escaner)}
+.chip .cmd{font-family:var(--mono); font-size:10.5px; color:var(--tenue); letter-spacing:.02em}
+.chip[aria-selected="true"]{
+  background:var(--escaner); border-color:var(--escaner); color:#fff;
+}
+.chip[aria-selected="true"] .cmd{color:rgba(255,255,255,.82)}
+.chip:focus-visible{outline:2px solid var(--escaner); outline-offset:2px}
+
+/* ---------------- escenario ---------------- */
+.tarjeta{
+  background:var(--panel); border:1px solid var(--regla); border-radius:11px;
+  margin-top:14px; overflow:hidden;
+}
+.tarjeta-cab{padding:16px 18px 14px; border-bottom:1px solid var(--regla)}
+.tarjeta-cab h3{margin:0 0 5px; font-size:1.06rem; font-weight:600; letter-spacing:-.01em}
+.tarjeta-cab p{margin:0; color:var(--tenue); font-size:13.5px; max-width:62ch}
+
+/* ---------------- el cable ---------------- */
+.rotulos{
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  padding:14px 18px 8px; font-family:var(--mono); font-size:11.5px; letter-spacing:.04em;
+}
+.rotulo{display:flex; flex-direction:column; gap:1px}
+.rotulo b{font-weight:600; font-size:12px}
+.rotulo span{color:var(--tenue); font-size:10.5px}
+.rotulo.der{text-align:right}
+.rot-e b{color:var(--escaner)} .rot-o b{color:var(--objetivo)}
+
+.cable{position:relative; padding:4px 18px 14px}
+.cable::before,.cable::after{
+  content:""; position:absolute; top:0; bottom:14px; width:1px;
+  background:var(--regla);
+}
+.cable::before{left:13%} .cable::after{right:13%}
+
+.paso{
+  position:relative; height:62px; cursor:pointer;
+  border-radius:6px; transition:background .15s;
+}
+.paso:hover{background:var(--panel-2)}
+.paso[aria-current="true"]{background:var(--panel-2)}
+.paso:focus-visible{outline:2px solid var(--escaner); outline-offset:-2px}
+
+.flecha{
+  position:absolute; left:13%; right:13%; top:38px; height:2px;
+  background:var(--apagado); transition:background .2s;
+}
+.paso[data-quien="e"] .flecha{background:var(--escaner)}
+.paso[data-quien="o"] .flecha{background:var(--objetivo)}
+.paso[data-quien="nadie"] .flecha{
+  background:none; border-top:2px dashed var(--apagado); height:0;
+}
+.punta{position:absolute; top:-4px; width:0; height:0;
+  border-top:5px solid transparent; border-bottom:5px solid transparent}
+.paso[data-dir="ida"] .punta{right:-1px; border-left:9px solid var(--escaner)}
+.paso[data-dir="vuelta"] .punta{left:-1px; border-right:9px solid var(--objetivo)}
+.paso[data-quien="nadie"] .punta{display:none}
+
+.etiqueta{
+  position:absolute; left:50%; transform:translateX(-50%); top:10px;
+  font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.04em;
+  background:var(--panel); padding:0 9px; white-space:nowrap;
+}
+.paso[aria-current="true"] .etiqueta{background:var(--panel-2)}
+.paso[data-quien="e"] .etiqueta{color:var(--escaner)}
+.paso[data-quien="o"] .etiqueta{color:var(--objetivo)}
+.paso[data-quien="nadie"] .etiqueta{color:var(--tenue); font-weight:400; font-style:italic}
+.tcpd-mini{
+  position:absolute; left:50%; transform:translateX(-50%); top:44px;
+  font-family:var(--mono); font-size:10.5px; color:var(--tenue);
+  white-space:nowrap; max-width:74%; overflow:hidden; text-overflow:ellipsis;
+}
+.viajero{
+  position:absolute; top:-3px; width:8px; height:8px; border-radius:50%;
+  background:currentColor; opacity:0;
+}
+.paso[data-quien="e"] .viajero{color:var(--escaner)}
+.paso[data-quien="o"] .viajero{color:var(--objetivo)}
+.paso[aria-current="true"][data-dir="ida"] .viajero{animation:viaja-ida 1s ease-in-out}
+.paso[aria-current="true"][data-dir="vuelta"] .viajero{animation:viaja-vuelta 1s ease-in-out}
+@keyframes viaja-ida{0%{left:0;opacity:1}90%{opacity:1}100%{left:calc(100% - 8px);opacity:0}}
+@keyframes viaja-vuelta{0%{left:calc(100% - 8px);opacity:1}90%{opacity:1}100%{left:0;opacity:0}}
+@media (prefers-reduced-motion:reduce){
+  .viajero{animation:none!important; display:none}
+  *{scroll-behavior:auto!important}
+}
+
+/* estados TCP a los lados */
+.estado{
+  position:absolute; top:30px; font-family:var(--mono); font-size:10px;
+  color:var(--tenue); letter-spacing:.03em; max-width:12.5%;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.estado.izq{left:0; text-align:left}
+.estado.der{right:0; text-align:right}
+.paso[aria-current="true"] .estado{color:var(--tinta); font-weight:500}
+
+/* ---------------- inspector ---------------- */
+.inspector{border-top:1px solid var(--regla); background:var(--panel-2)}
+.insp-cab{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  flex-wrap:wrap; padding:13px 18px 0;
+}
+.insp-cab h4{
+  margin:0; font-size:11px; font-family:var(--mono); letter-spacing:.13em;
+  text-transform:uppercase; color:var(--tenue); font-weight:500;
+}
+.paso-n{font-family:var(--mono); font-size:11px; color:var(--tenue)}
+
+.bits{
+  display:grid; grid-template-columns:repeat(8,1fr); gap:5px; padding:11px 18px 4px;
+}
+.bit{
+  border:1px solid var(--regla); border-radius:5px; background:var(--panel);
+  padding:6px 2px 5px; text-align:center; transition:all .18s;
+}
+.bit .nom{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.02em}
+.bit .val{font-family:var(--mono); font-size:9.5px; color:var(--tenue); display:block}
+.bit[data-on="1"]{color:#fff; border-color:transparent}
+.bit[data-on="1"] .val{color:rgba(255,255,255,.78)}
+.bit[data-on="0"]{color:var(--apagado)}
+.bit[data-on="0"] .val{color:var(--apagado)}
+.bits[data-quien="e"] .bit[data-on="1"]{background:var(--escaner)}
+.bits[data-quien="o"] .bit[data-on="1"]{background:var(--objetivo)}
+
+.hexlinea{
+  padding:2px 18px 12px; font-family:var(--mono); font-size:11.5px; color:var(--tenue);
+}
+.hexlinea b{color:var(--tinta); font-weight:600}
+.no-tcp{
+  margin:0; padding:12px 18px; font-family:var(--mono); font-size:12px;
+  color:var(--tenue); border-top:1px dashed var(--regla);
+}
+.no-tcp b{color:var(--tinta)}
+
+.campos{
+  display:flex; flex-wrap:wrap; gap:4px 18px; padding:0 18px 12px;
+  font-family:var(--mono); font-size:11.5px; color:var(--tenue);
+}
+.campos b{color:var(--tinta); font-weight:500}
+
+.tcpdump{
+  margin:0 18px 14px; padding:10px 12px; border-radius:6px;
+  background:var(--panel); border:1px solid var(--regla);
+  font-family:var(--mono); font-size:11.5px; line-height:1.55;
+  overflow-x:auto; white-space:pre; color:var(--tinta);
+}
+.nota{
+  margin:0; padding:0 18px 16px; font-size:13.5px; color:var(--tenue); max-width:66ch;
+}
+.nota b{color:var(--tinta); font-weight:600}
+
+/* ---------------- controles ---------------- */
+.controles{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:12px 18px; border-top:1px solid var(--regla); background:var(--panel);
+}
+button.ctrl{
+  font-family:var(--sans); font-size:13px; font-weight:500;
+  background:var(--panel-2); color:var(--tinta);
+  border:1px solid var(--regla); border-radius:6px; padding:6px 13px; cursor:pointer;
+  transition:border-color .15s;
+}
+button.ctrl:hover:not(:disabled){border-color:var(--escaner)}
+button.ctrl:disabled{opacity:.4; cursor:default}
+button.ctrl:focus-visible{outline:2px solid var(--escaner); outline-offset:2px}
+button.primaria{background:var(--escaner); border-color:var(--escaner); color:#fff; min-width:104px}
+.vel{margin-left:auto; display:flex; align-items:center; gap:7px;
+  font-family:var(--mono); font-size:11px; color:var(--tenue)}
+.vel input{accent-color:var(--escaner); width:88px}
+
+/* ---------------- veredicto ---------------- */
+.veredicto{
+  display:flex; align-items:center; gap:11px; flex-wrap:wrap;
+  padding:13px 18px; border-top:1px solid var(--regla);
+}
+.pildora{
+  font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.03em;
+  padding:3px 11px; border-radius:20px; color:#fff; white-space:nowrap;
+}
+.pildora[data-estado="open"]{background:var(--abierto)}
+.pildora[data-estado="closed"]{background:var(--cerrado)}
+.pildora[data-estado="filtered"]{background:var(--filtrado)}
+.pildora[data-estado="open|filtered"],.pildora[data-estado="unfiltered"]{background:var(--ambiguo)}
+.veredicto .razon{font-family:var(--mono); font-size:11.5px; color:var(--tenue)}
+.veredicto .expl{flex:1 1 280px; font-size:13.5px; color:var(--tenue); min-width:0}
+
+/* ---------------- pie ---------------- */
+.leyenda{
+  margin-top:26px; padding-top:18px; border-top:1px solid var(--regla);
+  font-size:13px; color:var(--tenue);
+}
+.leyenda h2{font-size:13.5px; color:var(--tinta); margin:0 0 9px; font-weight:600}
+.tabla-env{overflow-x:auto}
+table{border-collapse:collapse; font-size:12.5px; min-width:400px}
+th,td{text-align:left; padding:5px 13px 5px 0; border-bottom:1px solid var(--regla)}
+th{font-family:var(--mono); font-size:10.5px; text-transform:uppercase;
+  letter-spacing:.09em; color:var(--tenue); font-weight:500}
+td code{font-family:var(--mono); font-size:12px; color:var(--tinta)}
+.leyenda p{max-width:68ch}
+.leyenda a{color:var(--escaner)}
+
+@media (max-width:560px){
+  .cable::before{left:7%} .cable::after{right:7%}
+  .flecha{left:7%; right:7%}
+  .estado{display:none}
+  .bits{grid-template-columns:repeat(4,1fr)}
+  .tcpd-mini{display:none}
+  .paso{height:56px}
+}
+</style>
+
+<div class="envoltorio">
+
+  <p class="eyebrow">Miniworkshop Nmap · Episodios 1 y 2</p>
+  <h1>Banderas TCP en un escaneo</h1>
+  <p class="entradilla">
+    Ocho intercambios reales, capturados con <code>tcpdump</code> en la VM
+    <code>nmap-target</code> mientras se la escaneaba desde
+    <code>192.168.60.1</code>. Elige un escenario y avanza paquete a paquete:
+    abajo verás qué bits van encendidos, qué línea escribe
+    <code>tcpdump</code> y qué deduce Nmap de todo ello.
+  </p>
+
+  <section class="selector">
+    <h2>Escenario</h2>
+    <div class="chips" role="tablist" aria-label="Escenarios de escaneo" id="chips"></div>
+  </section>
+
+  <article class="tarjeta">
+    <header class="tarjeta-cab">
+      <h3 id="esc-nombre"></h3>
+      <p id="esc-resumen"></p>
+    </header>
+
+    <div class="rotulos">
+      <div class="rotulo rot-e"><b>Escáner</b><span>192.168.60.1</span></div>
+      <div class="rotulo rot-o der"><b>Objetivo</b><span id="obj-ip">192.168.60.10</span></div>
+    </div>
+
+    <div class="cable" id="cable"></div>
+
+    <div class="inspector">
+      <div class="insp-cab">
+        <h4>Paquete seleccionado</h4>
+        <span class="paso-n" id="paso-n"></span>
+      </div>
+      <div id="zona-bits">
+        <div class="bits" id="bits"></div>
+        <div class="hexlinea" id="hexlinea"></div>
+      </div>
+      <p class="no-tcp" id="no-tcp" hidden></p>
+      <div class="campos" id="campos"></div>
+      <div class="tcpdump" id="tcpdump"></div>
+      <p class="nota" id="nota"></p>
+    </div>
+
+    <div class="controles">
+      <button class="ctrl" id="btn-ant" type="button">← Anterior</button>
+      <button class="ctrl primaria" id="btn-play" type="button">▶ Reproducir</button>
+      <button class="ctrl" id="btn-sig" type="button">Siguiente →</button>
+      <label class="vel">
+        Velocidad
+        <input type="range" id="vel" min="500" max="2600" step="100" value="1500"
+               aria-label="Velocidad de reproducción">
+      </label>
+    </div>
+
+    <div class="veredicto">
+      <span class="pildora" id="ver-pildora"></span>
+      <span class="razon" id="ver-razon"></span>
+      <span class="expl" id="ver-expl"></span>
+    </div>
+  </article>
+
+  <section class="leyenda">
+    <h2>Cómo se leen las banderas en tcpdump</h2>
+    <p>
+      <code>tcpdump</code> abrevia las ocho banderas con una letra, y
+      <strong>el ACK es un punto</strong>. Si retienes sólo eso, ya lees casi
+      cualquier captura.
+    </p>
+    <div class="tabla-env">
+      <table>
+        <thead><tr><th>Notación</th><th>Banderas</th><th>Cuándo aparece</th></tr></thead>
+        <tbody>
+          <tr><td><code>[S]</code></td><td>SYN</td><td>Petición de apertura</td></tr>
+          <tr><td><code>[S.]</code></td><td>SYN+ACK</td><td>Puerto abierto que acepta</td></tr>
+          <tr><td><code>[.]</code></td><td>ACK</td><td>Confirmación; también el sondeo de <code>-sA</code></td></tr>
+          <tr><td><code>[R]</code></td><td>RST</td><td>Corte abrupto: lo manda quien aborta</td></tr>
+          <tr><td><code>[R.]</code></td><td>RST+ACK</td><td>Rechazo de un puerto cerrado</td></tr>
+          <tr><td><code>[F.]</code></td><td>FIN+ACK</td><td>Cierre ordenado</td></tr>
+          <tr><td><code>[P.]</code></td><td>PSH+ACK</td><td>Lleva datos: aquí viaja el banner</td></tr>
+          <tr><td><code>[FPU]</code></td><td>FIN+PSH+URG</td><td>El paquete Xmas de <code>-sX</code></td></tr>
+          <tr><td><code>[none]</code></td><td>ninguna</td><td>El paquete NULL de <code>-sN</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:14px">
+      El byte de banderas se lee de mayor a menor peso:
+      <code>CWR ECE URG ACK PSH RST SYN FIN</code>. Un SYN solo vale
+      <code>0x02</code>; un SYN+ACK, <code>0x12</code>; un RST+ACK,
+      <code>0x14</code>. Es el mismo byte que filtras con
+      <code>tcp[tcpflags]</code> en el
+      <a href="../apendices/apendice-a-tcpdump.md">Apéndice A</a>.
+    </p>
+  </section>
+</div>
+
+<script>
+"use strict";
+
+const BITS = [
+  {n:"CWR", v:128}, {n:"ECE", v:64}, {n:"URG", v:32}, {n:"ACK", v:16},
+  {n:"PSH", v:8},   {n:"RST", v:4},  {n:"SYN", v:2},  {n:"FIN", v:1}
+];
+
+// Cada paso sale de una captura real. `quien`: e = escáner, o = objetivo,
+// nadie = no hubo respuesta. `f`: banderas TCP encendidas.
+const ESCENARIOS = [
+{
+  id:"connect", nombre:"Conexión completa", cmd:"-sT", puerto:"22",
+  resumen:"Lo que hace un escaneo connect, y lo que hace cualquier cliente normal: el handshake de tres vías completo. Nmap se lo pide al sistema operativo y no llega a ver los paquetes.",
+  veredicto:{estado:"open", razon:"syn-ack", expl:"El puerto aceptó la conexión. Hubo sesión, y el servidor llegó a mandar su banner."},
+  pasos:[
+   {quien:"e", f:["SYN"], et:"SYN", eE:"SYN_SENT", eO:"LISTEN",
+    campos:["seq 1986689431","win 64240","len 0"],
+    td:"192.168.60.1.35024 > 192.168.60.10.22: Flags [S], seq 1986689431,\n  win 64240, options [mss 1460,sackOK,TS val 2177619312 ecr 0,nop,wscale 7], length 0",
+    nota:"El primer paquete. Fíjate en <b>win 64240</b> y en la lista larga de opciones: eso es el núcleo de tu sistema operativo abriendo una conexión de verdad. Compáralo con el escenario del SYN scan."},
+   {quien:"o", f:["SYN","ACK"], et:"SYN·ACK", eE:"SYN_SENT", eO:"SYN_RCVD",
+    campos:["seq 629903496","ack 1986689432","win 31856"],
+    td:"192.168.60.10.22 > 192.168.60.1.35024: Flags [S.], seq 629903496,\n  ack 1986689432, win 31856, options [mss 1460,sackOK,TS val 2858291632 ...], length 0",
+    nota:"El puerto está abierto y lo demuestra. El <b>ack 1986689432</b> es el <code>seq</code> del paquete anterior <b>más uno</b>: así se confirma en TCP. Aquí Nmap ya sabe todo lo que necesita."},
+   {quien:"e", f:["ACK"], et:"ACK", eE:"ESTABLISHED", eO:"ESTABLISHED",
+    campos:["ack 1","win 502","len 0"],
+    td:"192.168.60.1.35024 > 192.168.60.10.22: Flags [.], ack 1, win 502, length 0",
+    nota:"Tercer paquete del handshake. <b>La conexión está establecida</b>, y el servicio la registra en su log de aplicación. Esto es justo lo que el escaneo SYN evita."},
+   {quien:"e", f:["FIN","ACK"], et:"FIN·ACK", eE:"FIN_WAIT_1", eO:"CLOSE_WAIT",
+    campos:["seq 1","ack 1","win 502"],
+    td:"192.168.60.1.35024 > 192.168.60.10.22: Flags [F.], seq 1, ack 1, win 502, length 0",
+    nota:"El cliente cierra ordenadamente. Un cierre con FIN es una despedida; el RST del escenario siguiente es colgar el teléfono."},
+   {quien:"o", f:["ACK"], et:"ACK", eE:"FIN_WAIT_2", eO:"CLOSE_WAIT",
+    campos:["ack 2","win 249","len 0"],
+    td:"192.168.60.10.22 > 192.168.60.1.35024: Flags [.], ack 2, win 249, length 0",
+    nota:"El objetivo confirma el FIN. Todavía puede seguir enviando: TCP cierra cada sentido por separado."},
+   {quien:"o", f:["PSH","ACK"], et:"PSH·ACK · datos", eE:"FIN_WAIT_2", eO:"CLOSE_WAIT",
+    campos:["seq 1:22","ack 2","len 21"],
+    td:"192.168.60.10.22 > 192.168.60.1.35024: Flags [P.], seq 1:22, ack 2,\n  win 249, length 21: SSH: SSH-2.0-OpenSSH_9.6",
+    nota:"El único paquete con datos: <b>length 21</b>, y dentro el banner <code>SSH-2.0-OpenSSH_9.6</code>. <b>De aquí sale la columna VERSION de <code>-sV</code></b>. El servidor dice su versión; nadie la comprueba."}
+  ]
+},
+{
+  id:"syn", nombre:"SYN half-open", cmd:"-sS", puerto:"22",
+  resumen:"El escaneo por defecto de Nmap con privilegios. Corta en cuanto sabe la respuesta, sin completar el handshake. Aquí Nmap construye los paquetes él mismo.",
+  veredicto:{estado:"open", razon:"syn-ack", expl:"Mismo veredicto que la conexión completa, con la mitad de paquetes y sin dejar sesión en el log del servicio."},
+  pasos:[
+   {quien:"e", f:["SYN"], et:"SYN", eE:"SYN_SENT", eO:"LISTEN",
+    campos:["seq 250831424","win 1024","mss 1460"],
+    td:"192.168.60.1.57850 > 192.168.60.10.22: Flags [S], seq 250831424,\n  win 1024, options [mss 1460], length 0",
+    nota:"Aparentemente igual que antes, pero mira: <b>win 1024</b> y una sola opción. El núcleo mandaba <code>win 64240</code> y cinco opciones. <b>Esa diferencia es la firma de Nmap</b>, y es por donde lo detecta un IDS."},
+   {quien:"o", f:["SYN","ACK"], et:"SYN·ACK", eE:"SYN_SENT", eO:"SYN_RCVD",
+    campos:["seq 117182751","ack 250831425","win 32120"],
+    td:"192.168.60.10.22 > 192.168.60.1.57850: Flags [S.], seq 117182751,\n  ack 250831425, win 32120, options [mss 1460], length 0",
+    nota:"El objetivo acepta y <b>reserva recursos</b> para una conexión que nunca va a llegar. El puerto queda en <code>SYN_RCVD</code>."},
+   {quien:"e", f:["RST"], et:"RST", eE:"CLOSED", eO:"CLOSED",
+    campos:["seq 250831425","win 0","len 0"],
+    td:"192.168.60.1.57850 > 192.168.60.10.22: Flags [R], seq 250831425, win 0, length 0",
+    nota:"En vez del ACK que completaría el handshake, Nmap manda <b>RST</b> y aborta. El servicio nunca aceptó la conexión, así que muchos demonios <b>no la registran</b>. El cortafuegos sí la vio, siempre."}
+  ]
+},
+{
+  id:"cerrado", nombre:"Puerto cerrado", cmd:"-sS", puerto:"9999",
+  resumen:"Nadie escucha en ese puerto, pero el host está vivo y contesta. Éste es el caso de 65 527 de los 65 535 puertos del objetivo.",
+  veredicto:{estado:"closed", razon:"reset", expl:"El host respondió. «Cerrado» significa que llegaste hasta él y no había servicio, no que no llegaras."},
+  pasos:[
+   {quien:"e", f:["SYN"], et:"SYN", eE:"SYN_SENT", eO:"CLOSED",
+    campos:["seq 890262944","win 64240","len 0"],
+    td:"192.168.60.1.44826 > 192.168.60.10.9999: Flags [S], seq 890262944, win 64240, length 0",
+    nota:"El mismo SYN de siempre, contra un puerto donde no hay nadie escuchando."},
+   {quien:"o", f:["RST","ACK"], et:"RST·ACK", eE:"CLOSED", eO:"CLOSED",
+    campos:["seq 0","ack 890262945","win 0"],
+    td:"192.168.60.10.9999 > 192.168.60.1.44826: Flags [R.], seq 0, ack 890262945, win 0, length 0",
+    nota:"<b>RST+ACK</b>: el núcleo rechaza en nombre de un servicio que no existe. Respuesta <b>inmediata</b>, y por eso escanear 65 000 puertos cerrados es rapidísimo — pero también ruidoso: son 65 000 respuestas."}
+  ]
+},
+{
+  id:"drop", nombre:"Filtrado por descarte", cmd:"-sS", puerto:"8080",
+  resumen:"Un cortafuegos con la regla «drop»: tira el paquete y no contesta nada. Nmap no puede distinguirlo de una red con pérdidas, así que reintenta.",
+  veredicto:{estado:"filtered", razon:"no-response", expl:"Silencio. Es el estado que hace lentos los escaneos: hay que esperar el tiempo de espera completo y reintentar."},
+  pasos:[
+   {quien:"e", f:["SYN"], et:"SYN", eE:"SYN_SENT", eO:"—",
+    campos:["seq 144826644","win 1024","t = 0,000 s"],
+    td:"192.168.60.1.52769 > 192.168.60.10.8080: Flags [S], seq 144826644,\n  win 1024, options [mss 1460], length 0",
+    nota:"Primer intento. El paquete llega a la tarjeta de red del objetivo y el cortafuegos lo descarta antes de que ningún proceso lo vea."},
+   {quien:"nadie", f:[], et:"sin respuesta", eE:"SYN_SENT", eO:"—", sinTcp:true,
+    campos:[], td:"(no se capturó ningún paquete de vuelta)",
+    nota:"Aquí no hay paquete que inspeccionar, y ése es justo el problema. <b>Nmap no puede saber si hay un cortafuegos o si el paquete se perdió.</b>"},
+   {quien:"e", f:["SYN"], et:"SYN (reintento)", eE:"SYN_SENT", eO:"—",
+    campos:["seq 144957718","win 1024","t = 0,100 s"],
+    td:"192.168.60.1.52771 > 192.168.60.10.8080: Flags [S], seq 144957718,\n  win 1024, options [mss 1460], length 0",
+    nota:"Reintento, 100 ms después y desde otro puerto de origen. Con <code>--max-retries 0</code> te ahorras esto: en el laboratorio, esos dos puertos filtrados bajan de <b>1,34 s a 0,24 s</b>."},
+   {quien:"nadie", f:[], et:"sin respuesta", eE:"CLOSED", eO:"—", sinTcp:true,
+    campos:[], td:"(no se capturó ningún paquete de vuelta)",
+    nota:"Nmap se rinde y lo marca <code>filtered</code>. Dos puertos así cuestan más tiempo que cien puertos cerrados: <b>1,34 s frente a 0,15 s</b>."}
+  ]
+},
+{
+  id:"reject", nombre:"Filtrado por rechazo", cmd:"-sS", puerto:"445",
+  resumen:"El mismo cortafuegos, otra regla: «reject». Contesta con un ICMP y al hacerlo se delata. Éste es el escenario que explica por qué -sS y -sT dan razones distintas.",
+  veredicto:{estado:"filtered", razon:"admin-prohibited", expl:"También filtrado, pero ahora sabes que hay un cortafuegos con una regla explícita para ese puerto."},
+  pasos:[
+   {quien:"e", f:["SYN"], et:"SYN", eE:"SYN_SENT", eO:"—",
+    campos:["seq 555822019","win 1024","mss 1460"],
+    td:"192.168.60.1.60175 > 192.168.60.10.445: Flags [S], seq 555822019,\n  win 1024, options [mss 1460], length 0",
+    nota:"Un SYN idéntico al del escenario anterior. Lo que cambia es la regla que se lo encuentra."},
+   {quien:"o", f:[], et:"ICMP 3/13", eE:"CLOSED", eO:"—", icmp:{t:3,c:13},
+    campos:["tipo 3","código 13","len 52"],
+    td:"192.168.60.10 > 192.168.60.1: ICMP host 192.168.60.10 unreachable -\n  admin prohibited filter, length 52",
+    nota:"No es TCP: es <b>ICMP tipo 3, código 13</b>, «prohibido administrativamente». <b><code>-sS</code> lee este paquete</b> y reporta <code>admin-prohibited</code>. <b><code>-sT</code> no lo ve nunca</b> — sólo recibe el error que le devuelve <code>connect()</code>, que ya no distingue el código, y por eso reporta <code>host-unreach</code>. Ninguna de las dos miente."}
+  ]
+},
+{
+  id:"xmas", nombre:"Xmas / FIN / NULL", cmd:"-sX", puerto:"22",
+  resumen:"Paquetes con combinaciones de banderas que ningún sistema operativo genera en condiciones normales. Se apoyan en lo que el RFC 793 obliga a responder.",
+  veredicto:{estado:"open|filtered", razon:"no-response", expl:"Y aquí está el problema: un puerto abierto y uno descartado por cortafuegos producen exactamente el mismo silencio."},
+  pasos:[
+   {quien:"e", f:["FIN","PSH","URG"], et:"FIN·PSH·URG", eE:"—", eO:"LISTEN",
+    campos:["seq 3733841175","win 1024","urg 0"],
+    td:"192.168.60.1.36513 > 192.168.60.10.22: Flags [FPU], seq 3733841175,\n  win 1024, urg 0, length 0",
+    nota:"El paquete «árbol de Navidad»: tres bits encendidos a la vez. <b>Ninguna pila TCP legítima manda esto</b>, y por eso <code>tcp[tcpflags] == (tcp-fin|tcp-push|tcp-urg)</code> es una regla de detección en una línea."},
+   {quien:"nadie", f:[], et:"sin respuesta", eE:"—", eO:"LISTEN", sinTcp:true,
+    campos:[], td:"(no se capturó ningún paquete de vuelta)",
+    nota:"El puerto <b>está abierto</b>, y precisamente por eso calla: el RFC 793 dice que un puerto en <code>LISTEN</code> descarte en silencio un segmento sin SYN. Contra un puerto <b>cerrado</b> la respuesta habría sido <code>[R.]</code>."},
+   {quien:"e", f:["FIN","PSH","URG"], et:"FIN·PSH·URG (reintento)", eE:"—", eO:"LISTEN",
+    campos:["seq 3733972245","win 1024","urg 0"],
+    td:"192.168.60.1.36515 > 192.168.60.10.22: Flags [FPU], seq 3733972245,\n  win 1024, urg 0, length 0",
+    nota:"Reintento. Las variantes <code>-sF</code> (sólo FIN, <code>[F]</code>) y <code>-sN</code> (ninguna bandera, <code>[none]</code>) dan exactamente el mismo resultado. Y contra Windows, que responde RST a todo, las tres reportan los 65 535 puertos como cerrados."}
+  ]
+},
+{
+  id:"ack", nombre:"Escaneo ACK", cmd:"-sA", puerto:"80 y 445",
+  resumen:"No busca servicios: busca reglas de cortafuegos. Manda un ACK suelto, sin SYN previo, y se apoya en que el RFC obliga a contestar RST.",
+  veredicto:{estado:"unfiltered", razon:"reset", expl:"«Unfiltered» significa que el paquete llegó al host. No dice si el puerto está abierto o cerrado: -sA no sabe distinguirlos."},
+  pasos:[
+   {quien:"e", f:["ACK"], et:"ACK (puerto 80)", eE:"—", eO:"LISTEN",
+    campos:["ack 3755632559","win 1024","len 0"],
+    td:"192.168.60.1.37930 > 192.168.60.10.80: Flags [.], ack 3755632559, win 1024, length 0",
+    nota:"Un ACK que no corresponde a ninguna conexión existente. Es un paquete huérfano, a propósito."},
+   {quien:"o", f:["RST"], et:"RST", eE:"—", eO:"LISTEN",
+    campos:["seq 3755632559","win 0","len 0"],
+    td:"192.168.60.10.80 > 192.168.60.1.37930: Flags [R], seq 3755632559, win 0, length 0",
+    nota:"RST. El puerto 80 <b>está abierto</b>, pero contesta igual que uno cerrado: ante un ACK huérfano, el RFC 793 manda RST en los dos casos. Por eso <code>-sA</code> nunca dice <code>open</code>. Lo que sí demuestra es que <b>el paquete llegó</b>."},
+   {quien:"e", f:["ACK"], et:"ACK (puerto 445)", eE:"—", eO:"—",
+    campos:["ack 1058506106","win 1024","len 0"],
+    td:"192.168.60.1.53836 > 192.168.60.10.445: Flags [.], ack 1058506106, win 1024, length 0",
+    nota:"El mismo sondeo contra el puerto que el cortafuegos rechaza."},
+   {quien:"o", f:[], et:"ICMP 3/13", eE:"—", eO:"—", icmp:{t:3,c:13},
+    campos:["tipo 3","código 13","len 48"],
+    td:"192.168.60.10 > 192.168.60.1: ICMP host 192.168.60.10 unreachable -\n  admin prohibited filter, length 48",
+    nota:"Aquí no hay RST: hay ICMP. Nmap lo marca <code>filtered</code>. <b>Con esos dos resultados ya puedes dibujar la regla del cortafuegos</b> sin ver su configuración: el 80 pasa, el 445 está bloqueado explícitamente."}
+  ]
+},
+{
+  id:"udp", nombre:"Escaneo UDP", cmd:"-sU", puerto:"161 y 53",
+  resumen:"UDP no tiene handshake ni banderas. Saber si un puerto está abierto depende de que la aplicación conteste, y saber si está cerrado depende de un ICMP que el núcleo emite con cuentagotas.",
+  veredicto:{estado:"open", razon:"udp-response", expl:"El 161 contestó, así que está abierto. El 53 devolvió ICMP «puerto inalcanzable»: cerrado."},
+  pasos:[
+   {quien:"e", f:[], et:"UDP → 161", eE:"—", eO:"—", udp:true,
+    campos:["GetRequest(32)","OID .1.3.6.1.2.1.1.5.0"],
+    td:"192.168.60.1.64754 > 192.168.60.10.161:  GetRequest(32)  .1.3.6.1.2.1.1.5.0",
+    nota:"Nmap no manda un UDP vacío: manda una <b>consulta SNMP real</b> pidiendo el OID del nombre del sistema. Tiene que hacerlo, porque un servicio UDP que recibe basura normalmente calla."},
+   {quien:"o", f:[], et:"UDP ← respuesta", eE:"—", eO:"—", udp:true,
+    campos:["GetResponse(43)"],
+    td:"192.168.60.10.161 > 192.168.60.1.64754:  GetResponse(43)\n  .1.3.6.1.2.1.1.5.0=\"nmap-target.lab\"",
+    nota:"El objetivo contesta con su propio nombre: <code>nmap-target.lab</code>. Eso es <code>open</code>, y de paso es el primer dato de un SNMP mal configurado que va a entregar el kernel entero y la lista de puertos."},
+   {quien:"e", f:[], et:"UDP → 53", eE:"—", eO:"—", udp:true,
+    campos:["TXT CHAOS version.bind"],
+    td:"192.168.60.1.57222 > 192.168.60.10.53: 6+ TXT CHAOS? version.bind. (30)",
+    nota:"Contra el 53 manda una consulta DNS de verdad — <code>version.bind</code>, la que revela la versión de un servidor DNS."},
+   {quien:"o", f:[], et:"ICMP 3/3", eE:"—", eO:"—", icmp:{t:3,c:3},
+    campos:["tipo 3","código 3","len 66"],
+    td:"192.168.60.10 > 192.168.60.1: ICMP 192.168.60.10 udp port 53 unreachable, length 66",
+    nota:"<b>ICMP tipo 3, código 3</b>: puerto UDP inalcanzable. Eso es <code>closed</code>. Y aquí está el motivo de que <code>-sU</code> sea tan lento: el núcleo <b>limita el ritmo</b> al que emite estos errores, así que hay que esperar a que el objetivo te deje saber que sus puertos están cerrados, uno por uno."}
+  ]
+}
+];
+
+/* ------------------------------------------------------------------ */
+const $ = (id) => document.getElementById(id);
+let iEsc = 0, iPaso = 0, tocando = false, temporizador = null;
+
+function hex(f){
+  const v = BITS.reduce((a,b) => a + (f.includes(b.n) ? b.v : 0), 0);
+  return {v, s:"0x" + v.toString(16).padStart(2,"0")};
+}
+
+function pintarChips(){
+  const c = $("chips");
+  c.innerHTML = "";
+  ESCENARIOS.forEach((e,i) => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.type = "button"; b.role = "tab";
+    b.setAttribute("aria-selected", i === iEsc ? "true" : "false");
+    b.innerHTML = `<span>${e.nombre}</span><span class="cmd">${e.cmd} · puerto ${e.puerto}</span>`;
+    b.addEventListener("click", () => { parar(); iEsc = i; iPaso = 0; pintarTodo(); });
+    c.appendChild(b);
+  });
+}
+
+function pintarCable(){
+  const esc = ESCENARIOS[iEsc], cable = $("cable");
+  cable.innerHTML = "";
+  esc.pasos.forEach((p,i) => {
+    const d = document.createElement("div");
+    d.className = "paso"; d.tabIndex = 0; d.role = "button";
+    d.dataset.quien = p.quien;
+    d.dataset.dir = p.quien === "o" ? "vuelta" : "ida";
+    d.setAttribute("aria-current", i === iPaso ? "true" : "false");
+    d.setAttribute("aria-label", `Paquete ${i+1}: ${p.et}`);
+    d.innerHTML =
+      `<span class="estado izq">${p.eE || "—"}</span>` +
+      `<span class="estado der">${p.eO || "—"}</span>` +
+      `<div class="flecha"><span class="punta"></span><span class="viajero"></span></div>` +
+      `<span class="etiqueta">${p.et}</span>` +
+      `<span class="tcpd-mini">${p.td.split("\n")[0].replace(/^.*?:\s+/,"")}</span>`;
+    const ir = () => { parar(); iPaso = i; pintarTodo(); };
+    d.addEventListener("click", ir);
+    d.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ir(); }
+    });
+    cable.appendChild(d);
+  });
+}
+
+function pintarInspector(){
+  const esc = ESCENARIOS[iEsc], p = esc.pasos[iPaso];
+  $("paso-n").textContent = `${iPaso + 1} de ${esc.pasos.length}`;
+
+  const esTcp = !p.icmp && !p.udp && !p.sinTcp;
+  $("zona-bits").hidden = !esTcp;
+  const aviso = $("no-tcp");
+  if (esTcp){
+    aviso.hidden = true;
+    const b = $("bits");
+    b.dataset.quien = p.quien;
+    b.innerHTML = BITS.map(bit => {
+      const on = p.f.includes(bit.n) ? "1" : "0";
+      return `<div class="bit" data-on="${on}"><span class="nom">${bit.n}</span><span class="val">${bit.v}</span></div>`;
+    }).join("");
+    const h = hex(p.f);
+    $("hexlinea").innerHTML =
+      `Byte de banderas: <b>${h.s}</b> (${h.v}) · encendidas: <b>${p.f.length ? p.f.join(" + ") : "ninguna"}</b>`;
+  } else {
+    aviso.hidden = false;
+    if (p.icmp){
+      aviso.innerHTML = `Este paquete <b>no es TCP</b>: es ICMP tipo <b>${p.icmp.t}</b>, código <b>${p.icmp.c}</b>. No tiene banderas TCP que inspeccionar — y por eso un escaneo que no lee paquetes crudos se pierde el detalle.`;
+    } else if (p.udp){
+      aviso.innerHTML = `Este paquete <b>no es TCP</b>: es UDP. <b>UDP no tiene banderas</b> ni handshake — sólo origen, destino, longitud y suma de comprobación. Ahí está la raíz de toda la dificultad de <code>-sU</code>.`;
+    } else {
+      aviso.innerHTML = `<b>No hubo paquete.</b> El silencio no se puede inspeccionar, y ésa es exactamente la información que falta.`;
+    }
+  }
+
+  $("campos").innerHTML = (p.campos || []).map(c => {
+    const i = c.indexOf(" ");
+    return i < 0 ? `<span><b>${c}</b></span>`
+                 : `<span>${c.slice(0,i)} <b>${c.slice(i+1)}</b></span>`;
+  }).join("");
+  $("tcpdump").textContent = p.td;
+  $("nota").innerHTML = p.nota;
+}
+
+function pintarTodo(){
+  const esc = ESCENARIOS[iEsc];
+  $("esc-nombre").textContent = `${esc.nombre} · ${esc.cmd}`;
+  $("esc-resumen").textContent = esc.resumen;
+  $("obj-ip").textContent = `192.168.60.10:${esc.puerto}`;
+  pintarChips();
+  pintarCable();
+  pintarInspector();
+
+  $("ver-pildora").textContent = esc.veredicto.estado;
+  $("ver-pildora").dataset.estado = esc.veredicto.estado;
+  $("ver-razon").textContent = `razón: ${esc.veredicto.razon}`;
+  $("ver-expl").textContent = esc.veredicto.expl;
+
+  $("btn-ant").disabled = iPaso === 0;
+  $("btn-sig").disabled = iPaso === esc.pasos.length - 1;
+}
+
+function parar(){
+  tocando = false;
+  clearTimeout(temporizador);
+  $("btn-play").textContent = "▶ Reproducir";
+}
+
+function avanzar(){
+  const esc = ESCENARIOS[iEsc];
+  if (iPaso < esc.pasos.length - 1){
+    iPaso++; pintarTodo();
+    temporizador = setTimeout(avanzar, Number($("vel").value));
+  } else {
+    parar();
+  }
+}
+
+$("btn-play").addEventListener("click", () => {
+  if (tocando){ parar(); return; }
+  if (iPaso === ESCENARIOS[iEsc].pasos.length - 1) iPaso = 0;
+  tocando = true;
+  $("btn-play").textContent = "❚❚ Pausa";
+  pintarTodo();
+  temporizador = setTimeout(avanzar, Number($("vel").value));
+});
+$("btn-ant").addEventListener("click", () => { parar(); if (iPaso > 0){ iPaso--; pintarTodo(); } });
+$("btn-sig").addEventListener("click", () => {
+  parar();
+  if (iPaso < ESCENARIOS[iEsc].pasos.length - 1){ iPaso++; pintarTodo(); }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.key === "ArrowRight"){ $("btn-sig").click(); }
+  else if (e.key === "ArrowLeft"){ $("btn-ant").click(); }
+});
+
+pintarTodo();
+</script>

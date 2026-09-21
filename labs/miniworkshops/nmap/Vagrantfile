@@ -1,0 +1,62 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Laboratorio del miniworkshop «Nmap de cero a experto»
+# Usado por: Episodio 1 (descubrimiento y estados de puerto),
+#            Episodio 2 (versión, SO, UDP, cortafuegos, evasión),
+#            Episodio 3 (NSE y script propio) y el Apéndice A (tcpdump).
+# Ver README.md para topología, servicios, credenciales y uso ético.
+#
+# Red host-only 192.168.60.0/24 — el estudiante escanea desde su propio Kali
+# (adaptador host-only en la misma red, .50 reservada) o directamente desde el
+# host, que es 192.168.60.1.
+
+Vagrant.configure("2") do |config|
+  # Las Guest Additions no hacen falta: no hay carpetas compartidas y los
+  # payloads estáticos viajan por SCP con el provisionador "file".
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # --- nmap-target: el host "rico en servicios" que se escanea ---
+  # Siete servicios + un cortafuegos que produce a propósito los cuatro
+  # estados de puerto que Nmap sabe distinguir (ver README.md).
+  config.vm.define "nmap-target" do |target|
+    target.vm.box = "generic/alpine319"
+    target.vm.hostname = "nmap-target"
+
+    target.vm.network "private_network", ip: "192.168.60.10"
+
+    target.vm.provider "virtualbox" do |vb|
+      vb.name = "miniws-nmap-target"
+      vb.memory = 1024   # MariaDB sola ya pide ~128 MB; con 256 no arranca
+      vb.cpus = 1
+    end
+
+    # Sitio web, configuración de servicios y certificados: por SCP.
+    # Debe declararse ANTES del provisionador shell, que es quien lo instala.
+    target.vm.provision "file",
+      source: "provision",
+      destination: "/tmp/nmap-lab"
+
+    target.vm.provision "shell", path: "provision/nmap-target.sh"
+  end
+
+  # --- nmap-decoy: segundo host del segmento ---
+  # Existe para que el descubrimiento de hosts (-sn) tenga a quién encontrar y
+  # para demostrar que en el segmento local ARP delata a un host aunque este
+  # descarte los ICMP echo. Su dropbear en el 22 enseña, de paso, que «ssh» no
+  # siempre significa «OpenSSH».
+  config.vm.define "nmap-decoy" do |decoy|
+    decoy.vm.box = "generic/alpine319"
+    decoy.vm.hostname = "nmap-decoy"
+
+    decoy.vm.network "private_network", ip: "192.168.60.20"
+
+    decoy.vm.provider "virtualbox" do |vb|
+      vb.name = "miniws-nmap-decoy"
+      vb.memory = 256
+      vb.cpus = 1
+    end
+
+    decoy.vm.provision "shell", path: "provision/nmap-decoy.sh"
+  end
+end

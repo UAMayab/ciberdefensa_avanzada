@@ -1,0 +1,25 @@
+# Aurora Maritima - configuracion de la aplicacion de rastreo
+# FICTICIO: ninguna de estas claves es real ni sirve para nada.
+APP_NAME=AuroraRastreo
+APP_ENV=production
+APP_DEBUG=true
+APP_URL=http://intranet.auroramaritima.example
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=aurora_rastreo
+DB_USERNAME=root
+DB_PASSWORD=
+
+REDIS_HOST=127.0.0.1
+REDIS_PORT=16379
+REDIS_PASSWORD=
+
+MAIL_HOST=smtp.auroramaritima.example
+MAIL_USERNAME=notificaciones@auroramaritima.example
+MAIL_PASSWORD=Kq7#mareAlta2024
+
+AWS_ACCESS_KEY_ID=AKIA4XMPLE7QDEMOLAB1
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+API_TOKEN=amx_live_7f3c9a21b845e0d6c4127be9a5033ef1
