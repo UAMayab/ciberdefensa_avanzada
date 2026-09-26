@@ -231,3 +231,7 @@ playground/
 
 # Vagrant local state (machine IDs, keys, box metadata)
 .vagrant/
+
+# Lab payloads caught by the rules above that must ship with the repo
+!labs/modulo1/provision/site/www/.env
+!labs/modulo1/provision/site/www/uploads/nordlys-ai-whitepaper-2026.pdf

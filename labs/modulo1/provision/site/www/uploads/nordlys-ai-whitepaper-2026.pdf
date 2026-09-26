@@ -1,0 +1,176 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R /F2 8 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R /F2 8 0 R >> >> /Contents 6 0 R >>
+endobj
+5 0 obj
+<< /Length 1874 >>
+stream
+BT
+1 0 0 1 62 770 Tm
+/F2 9 Tf
+26 TL
+(NORDLYS AI ApS  |  WHITEPAPER 2026) Tj T*
+/F2 19 Tf
+30 TL
+(Fra pilotprojekt til produktion) Tj T*
+/F2 19 Tf
+34 TL
+(Seks laeringer fra 120 AI-systemer i drift) Tj T*
+/F1 10 Tf
+22 TL
+(Nordlys AI ApS, Kobenhavn  -  februar 2026  -  version 1.2) Tj T*
+/F1 10 Tf
+26 TL
+(Forfattere: Sofie Kjaer, Jonas Bak, Rasmus Dahl) Tj T*
+/F2 12 Tf
+20 TL
+(Resume) Tj T*
+/F1 10 Tf
+15 TL
+(Siden 2019 har Nordlys AI sat mere end 120 modeller i produktion hos nordiske) Tj T*
+/F1 10 Tf
+15 TL
+(virksomheder inden for vindenergi, maritim transport, pharma og offentlig sektor.) Tj T*
+/F1 10 Tf
+15 TL
+(Dette whitepaper samler de monstre, vi ser gentage sig - og de fejl, der oftest) Tj T*
+/F1 10 Tf
+24 TL
+(far et velfungerende pilotprojekt til at strande for det kommer i drift.) Tj T*
+/F2 12 Tf
+20 TL
+(1. Datafundamentet afgor tidsplanen, ikke modelvalget) Tj T*
+/F1 10 Tf
+15 TL
+(I 71 procent af vores projekter la den storste enkeltpost i tidsplanen i at etablere) Tj T*
+/F1 10 Tf
+15 TL
+(et palideligt datagrundlag. Valget af modelarkitektur pavirkede sjaeldent) Tj T*
+/F1 10 Tf
+24 TL
+(leveringstiden med mere end to uger.) Tj T*
+/F2 12 Tf
+20 TL
+(2. Evaluering skal bygges for den forste model traenes) Tj T*
+/F1 10 Tf
+15 TL
+(Uden et testsaet formuleret af domaeneeksperter kan ingen afgore, om en aendring) Tj T*
+/F1 10 Tf
+15 TL
+(er en forbedring. Vi anbefaler 300-500 sporgsmal, skrevet af de mennesker der) Tj T*
+/F1 10 Tf
+24 TL
+(skal bruge systemet, og fastholdt som kontrakt gennem hele projektet.) Tj T*
+/F2 12 Tf
+20 TL
+(3. Drift er en disciplin, ikke en fase) Tj T*
+/F1 10 Tf
+15 TL
+(Et system uden overvagning af input-fordelingen er et system, der en dag holder) Tj T*
+/F1 10 Tf
+15 TL
+(op med at virke, uden at nogen bemaerker det. Rollback skal kunne udfores af) Tj T*
+/F1 10 Tf
+15 TL
+(den, der har vagten - ikke af den, der byggede modellen.) Tj T*
+ET
+endstream
+endobj
+6 0 obj
+<< /Length 1541 >>
+stream
+BT
+1 0 0 1 62 770 Tm
+/F2 9 Tf
+26 TL
+(NORDLYS AI ApS  |  WHITEPAPER 2026) Tj T*
+/F2 12 Tf
+20 TL
+(4. Menneskeligt tilsyn er en funktion, ikke en politik) Tj T*
+/F1 10 Tf
+15 TL
+(EU AI Act kraever menneskeligt tilsyn med hojrisikosystemer. I praksis betyder) Tj T*
+/F1 10 Tf
+15 TL
+(det, at operatoren skal kunne se grundlaget for en anbefaling og afvise den -) Tj T*
+/F1 10 Tf
+24 TL
+(og at afvisningen skal logges. Det er en ting, man bygger i brugerfladen.) Tj T*
+/F2 12 Tf
+20 TL
+(5. Dokumentation skrevet bagefter bliver forkert) Tj T*
+/F1 10 Tf
+15 TL
+(Teknisk dokumentation efter bilag IV skal skrives af det team, der bygger) Tj T*
+/F1 10 Tf
+24 TL
+(systemet, mens det bygges. Ellers dokumenterer man det system, man tror man har.) Tj T*
+/F2 12 Tf
+20 TL
+(6. Sig nej til de projekter, der ikke har en ejer) Tj T*
+/F1 10 Tf
+15 TL
+(Det staerkeste enkeltsignal for, at et AI-projekt kommer i drift, er at der findes) Tj T*
+/F1 10 Tf
+24 TL
+(en navngiven person i forretningen, som far det bedre, nar systemet virker.) Tj T*
+/F2 12 Tf
+20 TL
+(Om Nordlys AI ApS) Tj T*
+/F1 10 Tf
+15 TL
+(Nordlys AI ApS er et dansk konsulenthus med 45 specialister i Kobenhavn, Aarhus) Tj T*
+/F1 10 Tf
+15 TL
+(og Stockholm. Vi bygger, deployer og driver AI-systemer for nordiske) Tj T*
+/F1 10 Tf
+24 TL
+(virksomheder. ISO/IEC 27001:2022-certificeret. CVR 41 92 07 65.) Tj T*
+/F1 10 Tf
+15 TL
+(Kontakt: hello@nordlysai.dk  -  +45 33 18 42 70) Tj T*
+/F1 10 Tf
+15 TL
+(Orestads Boulevard 61, 4. sal, 2300 Kobenhavn S, Danmark) Tj T*
+/F1 10 Tf
+15 TL
+(www.nordlysai.dk) Tj T*
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+9 0 obj
+<< /Title (Fra pilotprojekt til produktion - Nordlys AI Whitepaper 2026) /Author (Sofie Kjaer, Jonas Bak, Rasmus Dahl - Nordlys AI ApS) /Subject (Seks laeringer fra 120 AI-systemer i drift) /Keywords (AI, MLOps, EU AI Act, Norden, whitepaper, rev-FLAG{nordlys_pdf_metadata_4f70}) /Creator (nordlys-docgen 2.1.0) /Producer (nordlys-docgen 2.1.0 / internal build dmz-web-01) /CreationDate (D:20260211112408+01'00') /ModDate (D:20260211112408+01'00') >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000263 00000 n 
+0000000399 00000 n 
+0000002325 00000 n 
+0000003918 00000 n 
+0000004015 00000 n 
+0000004117 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R /Info 9 0 R >>
+startxref
+4583
+%%EOF
