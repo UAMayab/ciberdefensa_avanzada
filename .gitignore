@@ -220,6 +220,7 @@ __marimo__/
 # Course documents
 *.pdf
 *.docx
+!slides/*.pdf
 
 # Course materials (local only)
 resources/
