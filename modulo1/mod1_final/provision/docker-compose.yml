@@ -1,0 +1,79 @@
+# Entregable final — Módulo I · Servicios del objetivo "Aseguradora Delphos"
+#
+# TODO ESTE ENTORNO ES FICTICIO Y DELIBERADAMENTE VULNERABLE.
+# Sólo debe ejecutarse en la red host-only aislada de este laboratorio.
+# Cada servicio reproduce un error de configuración o una versión sin
+# parchear que una empresa real podría tener tras una migración apresurada.
+#
+# Mapa de puertos (todos publicados en la IP del host 192.168.59.10):
+#   80   nginx  -> sitio corporativo (superficie de reconocimiento)
+#   8080 tomcat -> gestor con credenciales débiles  (RCE vía WAR)
+#   8083 jenkins-> consola de script sin autenticar  (RCE)
+#   6379 redis  -> sin autenticar, protected-mode off (RCE vía replicación)
+#   3306 mariadb-> root débil + datos personales de clientes
+
+services:
+
+  web:
+    image: nginx:1.27-alpine
+    container_name: delphos-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+      - ./nginx-default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  # Tomcat con el gestor de aplicaciones accesible en remoto y credenciales
+  # débiles en tomcat-users.xml -> exploit/multi/http/tomcat_mgr_upload.
+  # La imagen oficial deja las apps en webapps.dist; las copiamos a webapps y
+  # sustituimos el context.xml del manager para quitar el filtro de IP local.
+  tomcat:
+    image: tomcat:9.0.30-jdk8-openjdk-slim
+    container_name: delphos-tomcat
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./tomcat/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml:ro
+      - ./tomcat/manager-context.xml:/staging/manager-context.xml:ro
+    command: >
+      bash -c "cp -rn /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps/ 2>/dev/null;
+      cp /staging/manager-context.xml /usr/local/tomcat/webapps/manager/META-INF/context.xml;
+      cp /staging/manager-context.xml /usr/local/tomcat/webapps/host-manager/META-INF/context.xml;
+      exec catalina.sh run"
+
+  # Jenkins con el asistente inicial desactivado: sin realm de seguridad, la
+  # consola /script queda abierta y anónima -> exploit/multi/http/jenkins_script_console.
+  jenkins:
+    image: jenkins/jenkins:2.190.1
+    container_name: delphos-jenkins
+    restart: unless-stopped
+    environment:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
+    ports:
+      - "8083:8080"
+
+  # Redis 5 sin contraseña y con protected-mode desactivado, escuchando en
+  # todas las interfaces -> exploit/linux/redis/redis_replication_cmd_exec.
+  redis:
+    image: redis:5.0
+    container_name: delphos-redis
+    restart: unless-stopped
+    command: ["redis-server", "--protected-mode", "no", "--bind", "0.0.0.0"]
+    ports:
+      - "6379:6379"
+
+  # MariaDB con root:root alcanzable en remoto y una base con datos personales
+  # ficticios de clientes -> auxiliary/scanner/mysql/mysql_login + volcado.
+  mariadb:
+    image: mariadb:10.5
+    container_name: delphos-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_ROOT_HOST: "%"
+    volumes:
+      - ./mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"

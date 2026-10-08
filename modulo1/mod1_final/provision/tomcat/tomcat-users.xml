@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Entregado final - Modulo I - Tomcat de Delphos (FICTICIO).
+     Credenciales debiles reutilizadas del resto de la infraestructura.
+     El rol manager-gui habilita la subida de WAR desde /manager/html. -->
+<tomcat-users xmlns="http://tomcat.apache.org/xml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+              version="1.0">
+  <role rolename="manager-gui"/>
+  <role rolename="manager-script"/>
+  <role rolename="admin-gui"/>
+  <user username="admin"
+        password="Delphos2019!"
+        roles="manager-gui,manager-script,admin-gui"/>
+</tomcat-users>

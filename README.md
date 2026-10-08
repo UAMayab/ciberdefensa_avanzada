@@ -44,7 +44,7 @@ criterios de evaluación.
 
 | Módulo | Título | Duración | Syllabus |
 |---|---|---|---|
-| I | Fundamentos de Ciberdefensa y Arquitectura de Redes Seguras | 20 h | [Ver syllabus](Syllabus_Modulo_I_Fundamentos_Ciberdefensa.md) |
+| I | Fundamentos de Ciberdefensa y Arquitectura de Redes Seguras | 20 h | [Ver syllabus](modulo1/Syllabus_Modulo_I_Fundamentos_Ciberdefensa.md) |
 
 > El syllabus del Módulo II (Gobernanza Digital: Gestión de Riesgos y
 > Cumplimiento Normativo), también a mi cargo, se publicará en este
@@ -53,19 +53,19 @@ criterios de evaluación.
 ## 🧪 Laboratorios
 
 Cada módulo con actividades prácticas que requieren un entorno propio cuenta
-con su laboratorio reproducible en [`labs/`](labs/):
+con su laboratorio reproducible en [`labs/`](modulo1/labs/):
 
-- [`labs/modulo1/`](labs/modulo1/) — entorno Vagrant para las actividades
+- [`labs/modulo1/`](modulo1/labs/modulo1/) — entorno Vagrant para las actividades
   prácticas del Módulo I.
 
 ## 🔬 Miniworkshops
 
 Además de las actividades de cada módulo, hay series de **especialización en
 una sola herramienta**, de cero a experto, en
-[`labs/miniworkshops/`](labs/miniworkshops/). No se califican y se recorren al
+[`labs/miniworkshops/`](modulo1/labs/miniworkshops/). No se califican y se recorren al
 ritmo de cada quien.
 
-- [`labs/miniworkshops/nmap/`](labs/miniworkshops/nmap/) — **Nmap de cero a
+- [`labs/miniworkshops/nmap/`](modulo1/labs/miniworkshops/nmap/) — **Nmap de cero a
   experto**: tres episodios que terminan escribiendo un script NSE propio, un
   apéndice de tcpdump y un laboratorio de dos VMs con siete servicios
   vulnerables.

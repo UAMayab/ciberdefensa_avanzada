@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Entregable final - Modulo I - context.xml del manager de Tomcat (Delphos, FICTICIO).
+     Se elimina el RemoteAddrValve que, por defecto, limita el gestor a
+     127.0.0.1: asi el gestor queda accesible desde cualquier IP, que es
+     justo el error de configuracion que el estudiante debe encontrar. -->
+<Context antiResourceLocking="false" privileged="true" >
+</Context>

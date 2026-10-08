@@ -1,0 +1,35 @@
+================================================================
+ SITIO FICTICIO — Aseguradora Delphos. Entregable final Módulo I.
+ Notas de la migración de octubre 2023. Borrador personal. — O. Palomo
+================================================================
+
+Estas son mis notas mientras consolido los servicios en el servidor nuevo
+(srv-delphos, el que da a Internet). Dirección pidió recortar costos de
+hosting, así que por ahora TODO va en esta misma máquina. Ya lo ordenaré.
+
+Pendientes que sé que están mal y voy a arreglar "después":
+
+1. Metí el portal viejo de clientes (Drupal), la app de siniestros (Tomcat),
+   Jenkins, Redis y la base MySQL en un solo servidor. No hay separación de
+   redes. Si alguien entra a uno, está en todos. -> hay que segmentar.
+
+2. El gestor de Tomcat quedó abierto a cualquier IP para poder desplegar el
+   WAR desde mi casa durante la migración. Usuario admin, contraseña la de
+   siempre (Delphos2019!). CERRAR a la red interna.
+
+3. Redis sin contraseña y escuchando "hacia afuera". Era más fácil para
+   conectarlo con el portal. Ponerle requirepass y bind interno.
+
+4. Jenkins sin login todavía. El equipo lo usa para desplegar. Activar
+   seguridad antes de que esto se sepa.
+
+5. El Drupal del portal lleva años sin actualizar (7.x). Sé que hay un bug
+   gordo de 2018 pero "nunca nos ha pasado nada". Actualizar o apagar.
+
+6. Dejé un config.old y un dump en /backups bajo el sitio para no perderlos
+   en la migración. QUITARLOS de ahí, son del raíz web.
+
+7. root de MySQL con contraseña "root" para las pruebas. Cambiar.
+
+Recordatorio para mí: nada de esto está en el inventario que le pasé a
+Marcela (TI). Ella cree que el portal viejo ya se apagó.

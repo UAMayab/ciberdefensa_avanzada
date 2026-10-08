@@ -1,0 +1,37 @@
+# ------------------------------------------------------------------
+# SITIO FICTICIO — Aseguradora Delphos. Entregable final Módulo I.
+# Copia de configuración que NUNCA debió quedar bajo el raíz web.
+# Respaldo rápido antes de la migración de octubre 2023. — opalomo
+# ------------------------------------------------------------------
+
+[app]
+env            = produccion
+base_url       = http://delphos-seguros.mx
+admin_email    = opalomo@delphos-seguros.mx
+
+# Base de datos de pólizas y clientes
+[database]
+driver         = mysql
+host           = 127.0.0.1
+port           = 3306
+name           = delphos
+user           = delphos_app
+password       = Delphos2019!
+# root temporal (BORRAR antes de salir a producción) root / root
+
+# Cache de sesiones
+[redis]
+host           = 127.0.0.1
+port           = 6379
+auth           = (sin contraseña por ahora)
+
+# Despliegue de la app de siniestros (Java)
+[tomcat]
+manager_url    = http://127.0.0.1:8080/manager/html
+manager_user   = admin
+manager_pass   = Delphos2019!
+
+# Integración continua
+[jenkins]
+url            = http://127.0.0.1:8083/
+# acceso: por ahora sin login para que el equipo despliegue rápido

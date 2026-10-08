@@ -1,0 +1,5 @@
+# Aseguradora Delphos — robots.txt (SITIO FICTICIO, laboratorio Módulo I)
+User-agent: *
+Disallow: /backups/
+Disallow: /config/
+Disallow: /portal-legacy/

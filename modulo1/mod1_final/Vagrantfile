@@ -1,0 +1,41 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Entregable final — Módulo I · Pentest de "Aseguradora Delphos"
+# Objetivo: UN solo host objetivo, aislado, que reúne los servicios
+# vulnerables que el estudiante debe reconocer, escanear, enumerar,
+# detectar con OpenVAS/GVM y explotar con Metasploit.
+#
+# La empresa "Aseguradora Delphos, S.A. de C.V." es FICTICIA. Toda IP,
+# dominio, persona, CURP, RFC y credencial de este laboratorio es
+# inventada y sólo vive en esta red host-only aislada.
+#
+# Topología: una VM Ubuntu 24.04 que levanta los servicios en contenedores
+# Docker. El estudiante ataca desde su propio Kali, conectado a la misma
+# red host-only. Ver README.md para cómo conectar Kali y traer todo arriba.
+
+Vagrant.configure("2") do |config|
+  config.vm.define "delphos-target" do |t|
+    t.vm.box = "cloud-image/ubuntu-24.04"
+    t.vm.hostname = "srv-delphos"
+
+    # Red host-only: el objetivo responde en 192.168.59.10, alcanzable desde
+    # el host y desde un Kali conectado a la misma red host-only de VirtualBox.
+    # (La NIC NAT que Vagrant añade por defecto da salida a Internet durante
+    # el aprovisionamiento, necesaria para descargar las imágenes Docker.)
+    t.vm.network "private_network", ip: "192.168.59.10"
+
+    t.vm.provider "virtualbox" do |vb|
+      vb.name = "mod1final-delphos-target"
+      vb.memory = 4096   # Tomcat + Drupal + Jenkins + MariaDB + Redis a la vez
+      vb.cpus = 2
+    end
+
+    # El box cloud-image/ubuntu-24.04 no monta carpeta /vagrant (sus Guest
+    # Additions no cuadran con VirtualBox 7.2), así que el material se sube por
+    # SCP con el provisionador "file", declarado ANTES del shell que lo instala.
+    t.vm.provision "file", source: "provision", destination: "/tmp/delphos"
+
+    t.vm.provision "shell", path: "provision/setup-delphos.sh"
+  end
+end
