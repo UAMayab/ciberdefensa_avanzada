@@ -1,16 +1,35 @@
 # Entregable final — Módulo I · Objetivo de pentest «Aseguradora Delphos»
 
 Laboratorio para el **entregable final del Módulo I**: una prueba de penetración
-completa (reconocimiento → escaneo → enumeración → detección de vulnerabilidades
-→ explotación) contra un objetivo realista, cuyo resultado —un informe
-profesional— se convierte en la lista de riesgos que el **Diseño de Topología de
-Red Segura** (entregable oficial de la insignia) debe mitigar.
+completa contra un objetivo realista, cuyo resultado —un informe profesional— se
+convierte en la lista de riesgos que el **Diseño de Topología de Red Segura**
+(entregable oficial de la insignia) debe mitigar.
+
+```mermaid
+flowchart LR
+    R["1 · Reconocimiento"] --> S["2 · Escaneo"]
+    S --> E["3 · Enumeración"]
+    E --> V["4 · Detección de vulnerabilidades<br/>(OpenVAS)"]
+    V --> X["5 · Explotación<br/>(Metasploit)"]
+    X --> I["Informe de pentest"]
+    I -. alimenta .-> T["Diseño de Topología<br/>de Red Segura"]
+
+    classDef fase fill:#13698f,stroke:#0b3d5c,color:#fff;
+    classDef informe fill:#c8a24a,stroke:#0b3d5c,color:#1c2b36;
+    classDef entregable fill:#f4f6f8,stroke:#0b3d5c,color:#1c2b36;
+    class R,S,E,V,X fase;
+    class I informe;
+    class T entregable;
+```
+
+Cada fase se apoya en la anterior: lo que enumeras decide lo que escaneas, y lo
+que escaneas decide lo que intentas explotar. El informe es el entregable
+principal; su apartado de riesgos es, literalmente, la lista de requisitos del
+diseño de topología.
 
 - **Enunciado del estudiante:** [`enunciado-pentest-delphos.md`](enunciado-pentest-delphos.md)
 - **Guía de herramientas (OpenVAS/Metasploit):** [`plantillas/guia-openvas-metasploit.md`](plantillas/guia-openvas-metasploit.md)
-- **Plantilla del informe:** [`plantillas/plantilla-informe-pentest.md`](plantillas/plantilla-informe-pentest.md)
-- Material de instructor (solucionario, rúbrica, checklist): en
-  `instructor/modulo1/final-pentest-delphos/` (fuera de este repositorio).
+- **Plantilla del informe:** [`plantillas/plantilla-informe-pentest.md`](plantillas/plantilla-informe-pentest.md) 
 
 > ⚠️ **Entorno ficticio y deliberadamente vulnerable.** *Aseguradora Delphos* y
 > todos sus datos (personas, CURP, RFC, pólizas, credenciales) son inventados.
@@ -21,13 +40,9 @@ Red Segura** (entregable oficial de la insignia) debe mitigar.
 
 ## Qué es
 
-Una sola VM (`delphos-target`, Ubuntu 24.04) que levanta, en contenedores
-Docker, los servicios que *Aseguradora Delphos* consolidó por error en su único
-servidor perimetral. El estudiante ataca desde **su propio Kali**, conectado a
+Una sola VM (`delphos-target`). El estudiante ataca desde **su propio Kali**, conectado a
 la misma red host-only.
 
-El hecho de que todo esté en un solo host, sin segmentación, es intencional: es
-el hallazgo de arquitectura que da sentido al puente con la topología segura.
 
 ## Topología
 
@@ -39,19 +54,7 @@ el hallazgo de arquitectura que da sentido al puente con la topología segura.
         └── 192.168.59.20  tu Kali (lo conectas tú, ver abajo)
 ```
 
-## Mapa de servicios del objetivo (`192.168.59.10`)
 
-| Puerto | Servicio | Qué representa en Delphos |
-|---|---|---|
-| 80   | nginx — sitio corporativo | cara pública; superficie de reconocimiento |
-| 8080 | Apache Tomcat | app de siniestros (Java) |
-| 8083 | Jenkins | integración continua del equipo de TI |
-| 6379 | Redis | caché de sesiones del portal |
-| 3306 | MariaDB | base de pólizas y clientes |
-
-*(Si está habilitado, un Drupal en 8081 representa el portal viejo de clientes.)*
-
----
 
 ## Puesta en marcha
 
@@ -125,9 +128,4 @@ mod1_final/
         └── init.sql                 # esquema + datos personales ficticios
 ```
 
-## Nota técnica reutilizable
 
-El box `cloud-image/ubuntu-24.04` no monta la carpeta `/vagrant` (sus Guest
-Additions no cuadran con VirtualBox 7.2). Por eso el material se sube con el
-provisionador `file` (SCP), declarado **antes** del `shell` que lo instala. El
-mismo patrón que el laboratorio de `labs/modulo1/`.
