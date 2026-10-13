@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block titulo %}Carrito{% endblock %}
+{% block contenido %}
+<h1 class="kaab-seccion-titulo h2 mb-4">Tu carrito</h1>
+
+{% if lineas %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card card-kaab">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr><th scope="col">Producto</th><th scope="col" class="text-end">Precio</th><th scope="col">Cantidad</th><th scope="col" class="text-end">Subtotal</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr>
+          </thead>
+          <tbody>
+          {% for l in lineas %}
+            <tr>
+              <td>
+                <a href="{{ url_for('producto', sku=l.sku) }}" class="fw-semibold link-dark text-decoration-none">{{ l.nombre }}</a>
+                <div class="small text-body-secondary">{{ l.presentacion }}</div>
+                {% if l.excede %}<div class="small text-danger">Solo quedan {{ l.stock }} piezas.</div>{% endif %}
+              </td>
+              <td class="text-end">{{ l.precio_mxn|pesos }}</td>
+              <td>
+                <form method="post" action="{{ url_for('carrito_actualizar') }}" class="d-flex gap-2 m-0">
+                  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                  <input type="hidden" name="sku" value="{{ l.sku }}">
+                  <label class="visually-hidden" for="c-{{ l.sku }}">Cantidad de {{ l.nombre }}</label>
+                  <input class="form-control form-control-sm" style="width: 5rem" id="c-{{ l.sku }}" type="number" name="cantidad" min="1" max="20" value="{{ l.cantidad }}">
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">Actualizar</button>
+                </form>
+              </td>
+              <td class="text-end">{{ l.subtotal|pesos }}</td>
+              <td>
+                <form method="post" action="{{ url_for('carrito_actualizar') }}" class="m-0">
+                  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                  <input type="hidden" name="sku" value="{{ l.sku }}">
+                  <input type="hidden" name="cantidad" value="0">
+                  <button class="btn btn-sm btn-link text-danger" type="submit">Quitar</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card card-kaab p-4">
+      <h2 class="h5 kaab-seccion-titulo">Resumen</h2>
+      <dl class="row mb-3">
+        <dt class="col-7 fw-normal">Subtotal</dt><dd class="col-5 text-end">{{ subtotal|pesos }}</dd>
+        <dt class="col-7 fw-normal">Envío</dt>
+        <dd class="col-5 text-end">{% if envio == 0 %}Gratis{% else %}{{ envio|pesos }}{% endif %}</dd>
+        <dt class="col-7 fs-5">Total</dt><dd class="col-5 text-end fs-5 precio">{{ (subtotal + envio)|pesos }}</dd>
+      </dl>
+      <p class="small text-body-secondary">IVA incluido en los precios. Los envíos a la Unión Europea pueden generar impuestos de importación que paga el destinatario.</p>
+      <a class="btn btn-kaab w-100" href="{{ url_for('pagar') }}">Continuar al pago</a>
+      <a class="btn btn-link w-100 mt-2" href="{{ url_for('catalogo') }}">Seguir comprando</a>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="card card-kaab p-5 text-center">
+  <p class="fs-5 mb-3">Tu carrito está vacío.</p>
+  <a class="btn btn-kaab align-self-center" href="{{ url_for('catalogo') }}">Ir a la tienda</a>
+</div>
+{% endif %}
+{% endblock %}

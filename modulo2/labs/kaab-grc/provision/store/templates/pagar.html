@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block titulo %}Pago{% endblock %}
+{% block contenido %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{{ url_for('carrito_ver') }}">Carrito</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Datos y pago</li>
+  </ol>
+</nav>
+<h1 class="kaab-seccion-titulo h2 mb-4">Datos de envío y pago</h1>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <form method="post" action="{{ url_for('pagar') }}" class="card card-kaab p-4" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h2 class="h5 kaab-seccion-titulo">Quién recibe el pedido</h2>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label" for="nombre">Nombre completo</label>
+          <input class="form-control" id="nombre" name="nombre" autocomplete="name" value="{{ datos.nombre or '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="correo">Correo electrónico</label>
+          <input class="form-control" id="correo" name="correo" type="email" autocomplete="email" value="{{ datos.correo or '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="telefono">Teléfono</label>
+          <input class="form-control" id="telefono" name="telefono" type="tel" autocomplete="tel" value="{{ datos.telefono or '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="rfc">RFC para factura <span class="text-body-secondary">(opcional)</span></label>
+          <input class="form-control text-uppercase" id="rfc" name="rfc" maxlength="13" value="{{ datos.rfc or '' }}">
+        </div>
+      </div>
+
+      <h2 class="h5 kaab-seccion-titulo">Dirección de envío</h2>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label" for="pais">País</label>
+          <select class="form-select" id="pais" name="pais" required>
+            <option value="">Elige un país</option>
+            {% for codigo, nombre in paises %}
+            <option value="{{ codigo }}" {% if datos.pais == codigo %}selected{% endif %}>{{ nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="codigo_postal">Código postal</label>
+          <input class="form-control" id="codigo_postal" name="codigo_postal" autocomplete="postal-code" value="{{ datos.codigo_postal or '' }}">
+          <div class="form-text">Obligatorio en México.</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="direccion">Calle, número, colonia o ciudad</label>
+          <input class="form-control" id="direccion" name="direccion" autocomplete="street-address" value="{{ datos.direccion or '' }}" required>
+        </div>
+      </div>
+
+      <h2 class="h5 kaab-seccion-titulo">Método de pago</h2>
+      <div class="mb-4">
+        {% for valor, nombre, ayuda in metodos %}
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio" name="metodo_pago" id="m-{{ valor }}" value="{{ valor }}" {% if datos.metodo_pago == valor %}checked{% endif %} required>
+          <label class="form-check-label" for="m-{{ valor }}">{{ nombre }}</label>
+          <div class="small text-body-secondary">{{ ayuda }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" id="acepto" name="acepto" value="1" required>
+        <label class="form-check-label" for="acepto">
+          He leído el <a href="http://192.168.61.10/aviso-privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a> y acepto el tratamiento de mis datos para atender mi pedido.
+        </label>
+      </div>
+
+      <button class="btn btn-kaab btn-lg w-100" type="submit">Confirmar pedido</button>
+    </form>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card card-kaab p-4">
+      <h2 class="h5 kaab-seccion-titulo">Tu pedido</h2>
+      <ul class="list-unstyled mb-3">
+        {% for l in lineas %}
+        <li class="d-flex justify-content-between small py-1">
+          <span>{{ l.cantidad }} × {{ l.nombre }} ({{ l.presentacion }})</span>
+          <span>{{ l.subtotal|pesos }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <dl class="row mb-0">
+        <dt class="col-7 fw-normal">Subtotal</dt><dd class="col-5 text-end">{{ subtotal|pesos }}</dd>
+        <dt class="col-7 fw-normal">Envío</dt>
+        <dd class="col-5 text-end">{% if envio == 0 %}Gratis{% else %}{{ envio|pesos }}{% endif %}</dd>
+        <dt class="col-7 fs-5">Total</dt><dd class="col-5 text-end fs-5 precio">{{ (subtotal + envio)|pesos }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+{% endblock %}

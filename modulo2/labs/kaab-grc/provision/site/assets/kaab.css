@@ -1,0 +1,39 @@
+/* FICTICIO: ajustes de marca de Kaab Orgánicos sobre Bootstrap 5.3.3 (vendor/). */
+:root {
+  --kaab-miel: #c98a1b;
+  --kaab-miel-claro: #f3d58f;
+  --kaab-hoja: #2f5d3a;
+  --kaab-hoja-oscura: #1d3a25;
+  --kaab-crema: #fbf8f1;
+}
+
+body { background: var(--kaab-crema); }
+
+.kaab-nav { background-color: var(--kaab-hoja); }
+.kaab-nav .navbar-brand { font-weight: 600; letter-spacing: .02em; }
+.kaab-nav .nav-link.active { color: var(--kaab-miel-claro) !important; }
+
+.kaab-logo { color: var(--kaab-miel-claro); margin-right: .25rem; }
+
+.btn-kaab { background-color: var(--kaab-miel); border-color: var(--kaab-miel); color: #fff; }
+.btn-kaab:hover, .btn-kaab:focus { background-color: #b07815; border-color: #b07815; color: #fff; }
+
+.kaab-hero {
+  background-color: var(--kaab-hoja);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='48'%3E%3Cpath d='M28 0 L56 14 L56 34 L28 48 L0 34 L0 14 Z' fill='none' stroke='%23ffffff' stroke-opacity='0.07'/%3E%3C/svg%3E");
+  color: #fff;
+}
+.kaab-acento { color: var(--kaab-miel-claro); }
+.kaab-hero .lead { color: #e4ece1; }
+.kaab-hero .eyebrow { color: var(--kaab-miel-claro); letter-spacing: .12em; text-transform: uppercase; font-size: .85rem; }
+
+.kaab-seccion-titulo { color: var(--kaab-hoja); }
+
+.card-kaab { border: 0; border-top: 4px solid var(--kaab-miel); box-shadow: 0 1px 3px rgba(0, 0, 0, .06); }
+.card-kaab .card-title { color: var(--kaab-hoja); font-size: 1.1rem; }
+
+.precio { color: var(--kaab-hoja); font-weight: 600; }
+
+.kaab-footer { background-color: var(--kaab-hoja-oscura); color: #d6e0d2; }
+.kaab-footer a { color: #fff; }
+.kaab-footer h2 { color: var(--kaab-miel-claro); }

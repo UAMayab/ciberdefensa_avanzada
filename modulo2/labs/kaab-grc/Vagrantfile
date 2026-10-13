@@ -1,0 +1,71 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Laboratorio «Evaluación de riesgos en Kaab Orgánicos» — Módulo II.
+# Kaab Orgánicos es una empresa FICTICIA. Uso exclusivo en red aislada
+# (host-only e intnet de VirtualBox). Ver README.md: topología, actividades y uso ético.
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "cloud-image/ubuntu-24.04"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # --- core-lan: base de pedidos, lotes y clientes (MariaDB) + proceso de pedidos ---
+  # Va primero: la tienda depende de la base de datos.
+  config.vm.define "core-lan" do |core|
+    core.vm.hostname = "core-lan"
+
+    core.vm.network "private_network",
+      ip: "192.168.62.20",
+      virtualbox__intnet: "core_net"
+
+    core.vm.provider "virtualbox" do |vb|
+      vb.name = "kaab-grc-core-lan"
+      vb.memory = 768
+      vb.cpus = 1
+    end
+
+    core.vm.provision "file", source: "provision/core", destination: "/tmp/kaab-core"
+    core.vm.provision "shell", path: "provision/core-lan.sh"
+  end
+
+  # --- web-dmz: tienda en línea y panel de administración (Flask) ---
+  # Dos adaptadores: el host-only para el navegador del estudiante y la
+  # intnet que la conecta con la base. Tener las dos es un hallazgo de la evaluación.
+  config.vm.define "web-dmz" do |web|
+    web.vm.hostname = "web-dmz"
+
+    web.vm.network "private_network", ip: "192.168.61.20"
+
+    web.vm.network "private_network",
+      ip: "192.168.62.10",
+      virtualbox__intnet: "core_net"
+
+    web.vm.provider "virtualbox" do |vb|
+      vb.name = "kaab-grc-web-dmz"
+      vb.memory = 512
+      vb.cpus = 1
+    end
+
+    web.vm.provision "file", source: "provision/store", destination: "/tmp/kaab-store"
+    web.vm.provision "file", source: "provision/site/vendor", destination: "/tmp/kaab-vendor"
+    web.vm.provision "file", source: "provision/site/assets", destination: "/tmp/kaab-assets"
+    web.vm.provision "shell", path: "provision/web-dmz.sh"
+  end
+
+  # --- grc-console: sitio público de la empresa + esta aplicación (Streamlit) ---
+  config.vm.define "grc-console" do |grc|
+    grc.vm.hostname = "grc-console"
+
+    grc.vm.network "private_network", ip: "192.168.61.10"
+
+    grc.vm.provider "virtualbox" do |vb|
+      vb.name = "kaab-grc-grc-console"
+      vb.memory = 1024
+      vb.cpus = 1
+    end
+
+    grc.vm.provision "file", source: "provision/site", destination: "/tmp/kaab-site"
+    grc.vm.provision "file", source: "app", destination: "/tmp/kaab-app"
+    grc.vm.provision "shell", path: "provision/grc-console.sh"
+  end
+end

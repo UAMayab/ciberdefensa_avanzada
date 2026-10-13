@@ -1,0 +1,81 @@
+{
+  "_nota": "FICTICIO. Kaab Orgánicos, S.A. de C.V. no existe. Todas las cifras son supuestos didácticos y deben ser internamente consistentes (ver tests/test_org.py).",
+  "schema_version": 1,
+  "organizacion": {
+    "nombre": "Kaab Orgánicos, S.A. de C.V.",
+    "nombre_corto": "Kaab",
+    "sede": "Mérida, Yucatán (México)",
+    "fundacion": 2011,
+    "empleados": 85,
+    "ventas_anuales_mxn": 38400000,
+    "descripcion": "Productora y exportadora de miel orgánica y derivados (propóleo, cera, jabón). Vende a consumidores finales por internet, a distribuidores en la Unión Europea y a cadenas regionales de supermercados en México. Su certificación orgánica europea exige trazabilidad por lote."
+  },
+  "canales": [
+    {
+      "id": "tienda",
+      "nombre": "Tienda en línea (México y UE)",
+      "ventas_anuales_mxn": 9600000,
+      "pedidos_por_dia": 26,
+      "ticket_promedio_mxn": 1000
+    },
+    {
+      "id": "distribuidores",
+      "nombre": "Distribuidores en la UE (B2B)",
+      "ventas_anuales_mxn": 15200000,
+      "distribuidores": 14,
+      "pedidos_por_dia": 10,
+      "ticket_promedio_mxn": 4200,
+      "penalidad_diaria_pct": 2,
+      "penalidad_maxima_pct": 10,
+      "dias_para_rescision": 7
+    },
+    {
+      "id": "retail",
+      "nombre": "Cadenas regionales en México (B2B)",
+      "ventas_anuales_mxn": 13600000,
+      "cadenas": 6
+    }
+  ],
+  "productos": [
+    {"nombre": "Miel multiflora orgánica 500 g", "precio_mxn": 165},
+    {"nombre": "Miel de azahar orgánica 1 kg", "precio_mxn": 310},
+    {"nombre": "Propóleo en gotas 30 ml", "precio_mxn": 240},
+    {"nombre": "Jabón de cera y propóleo", "precio_mxn": 95}
+  ],
+  "datos_personales": {
+    "clientes_registrados_tienda": 48000,
+    "de_ellos_en_ue": 6100,
+    "campos": ["nombre", "correo electrónico", "teléfono", "dirección de envío", "RFC (para factura)", "historial de compras"],
+    "retencion": "No hay política de retención definida."
+  },
+  "procesos_criticos": [
+    "Venta en línea y cobro",
+    "Atención de pedidos de distribuidores en la UE",
+    "Trazabilidad y liberación de lotes",
+    "Facturación y cobranza",
+    "Respaldo de la base de datos de clientes"
+  ],
+  "infraestructura": [
+    {"sistema": "Consola GRC (este laboratorio)", "maquina": "grc-console", "ip": "192.168.61.10", "rol": "Sitio público de la empresa y herramienta de evaluación"},
+    {"sistema": "Tienda en línea y panel de administración", "maquina": "web-dmz", "ip": "192.168.61.20", "rol": "Recibe pedidos de consumidores y distribuidores"},
+    {"sistema": "Base de pedidos, lotes y clientes", "maquina": "core-lan", "ip": "192.168.62.20", "rol": "Base de datos MariaDB y proceso que avanza los pedidos"}
+  ],
+  "impacto": {
+    "factor_temporada_alta": 3,
+    "meses_temporada_alta": ["Noviembre", "Diciembre"],
+    "costo_por_registro_expuesto_mxn": 25,
+    "umbrales_mxn": {
+      "Muy bajo": 40000,
+      "Bajo": 400000,
+      "Moderado": 2000000,
+      "Alto": 6000000
+    }
+  },
+  "lo_que_la_direccion_no_sabe": [
+    "Cuánto tiempo puede estar caída la tienda antes de que se pierdan clientes.",
+    "Cuántos días de retraso aceptan los distribuidores en la UE antes de terminar el contrato.",
+    "Si los respaldos de clientes se pueden restaurar.",
+    "Quién responde si la base de datos falla un fin de semana.",
+    "Qué hacer si se filtran datos de clientes de la UE."
+  ]
+}

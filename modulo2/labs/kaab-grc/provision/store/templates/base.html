@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- FICTICIO: tienda de un laboratorio educativo. Kaab Orgánicos no existe. -->
+  <title>{% block titulo %}Tienda{% endblock %} · Kaab Orgánicos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='kaab.css') }}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+<a class="visually-hidden-focusable" href="#contenido">Ir al contenido</a>
+
+<nav class="navbar navbar-expand-lg navbar-dark kaab-nav sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('catalogo') }}"><span class="kaab-logo" aria-hidden="true">⬡</span>Kaab <span class="fw-light">Tienda</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="menu">
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <li class="nav-item"><a class="nav-link" href="http://192.168.61.10/">Sitio de la empresa</a></li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('carrito_ver') }}">
+            Carrito <span class="badge text-bg-warning" aria-label="artículos en el carrito">{{ carrito_n }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main id="contenido" class="container py-4 flex-grow-1">
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensaje in mensajes %}
+      <div class="alert alert-{{ categoria }} alert-dismissible fade show" role="alert">
+        {{ mensaje }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+  {% block contenido %}{% endblock %}
+</main>
+
+<footer class="kaab-footer py-4 mt-5">
+  <div class="container small">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <strong>Kaab Orgánicos, S.A. de C.V.</strong><br>
+        Calle Colmena 101, Parque Industrial Kaab, 97000 Mérida, Yucatán, México
+      </div>
+      <div class="col-md-4">
+        Atención a clientes: <a href="mailto:contacto@kaab-organicos.example">contacto@kaab-organicos.example</a><br>
+        Tel. <a href="tel:+529995550100">+52 999 555 0100</a>, lunes a viernes, 9:00–18:00
+      </div>
+      <div class="col-md-4">
+        <a href="http://192.168.61.10/aviso-privacidad.html">Aviso de privacidad</a><br>
+        <em>Tienda ficticia para formación.</em>
+      </div>
+    </div>
+  </div>
+</footer>
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

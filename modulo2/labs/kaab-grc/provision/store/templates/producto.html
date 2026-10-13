@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block titulo %}{{ p.nombre }}{% endblock %}
+{% block contenido %}
+{% set texto_stock, color = estado_stock(p.stock) %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{{ url_for('catalogo') }}">Tienda</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ p.nombre }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card card-kaab p-4 h-100">
+      <span class="badge text-bg-{{ color }} align-self-start mb-3">{{ texto_stock }}</span>
+      <h1 class="h3 kaab-seccion-titulo">{{ p.nombre }}</h1>
+      <p class="text-body-secondary mb-2">{{ p.presentacion }} · SKU {{ p.sku }}</p>
+      <p class="fs-4 precio mb-3">{{ p.precio_mxn|pesos }} <span class="fs-6 text-body-secondary">IVA incluido</span></p>
+      <p>{{ p.descripcion }}</p>
+      <p class="small text-body-secondary mb-0">
+        Cada frasco lleva el número de lote en la etiqueta. Con ese número puedes rastrear su cosecha.
+      </p>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card card-kaab p-4">
+      <h2 class="h5 kaab-seccion-titulo">Agregar a tu carrito</h2>
+      {% if p.stock > 0 %}
+      <form method="post" action="{{ url_for('carrito_agregar') }}" class="row g-3 align-items-end">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <input type="hidden" name="sku" value="{{ p.sku }}">
+        <div class="col-sm-5">
+          <label class="form-label" for="cantidad">Cantidad</label>
+          <select class="form-select" id="cantidad" name="cantidad">
+            {% for n in range(1, [p.stock, 10]|min + 1) %}<option value="{{ n }}">{{ n }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-sm-7">
+          <button class="btn btn-kaab w-100" type="submit">Agregar al carrito</button>
+        </div>
+      </form>
+      <p class="small text-body-secondary mt-3 mb-0">Quedan {{ p.stock }} piezas en inventario.</p>
+      {% else %}
+      <p class="mb-0">Este producto está agotado. Vuelve pronto o <a href="http://192.168.61.10/contacto.html">escríbenos</a> para saber cuándo regresa.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

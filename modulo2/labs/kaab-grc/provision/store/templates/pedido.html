@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block titulo %}Pedido {{ numero }}{% endblock %}
+{% block contenido %}
+<h1 class="kaab-seccion-titulo h2 mb-1">Pedido {{ numero }}</h1>
+<p class="text-body-secondary mb-4">Realizado el {{ p.creado_en.strftime('%d/%m/%Y a las %H:%M') }}</p>
+
+<div class="card card-kaab p-4 mb-4">
+  <h2 class="h5 kaab-seccion-titulo">Seguimiento</h2>
+  <p class="mb-3"><strong>Estado actual:</strong> {{ ETIQUETAS[p.estado] }}</p>
+  <div class="progress mb-3" role="progressbar" aria-label="Avance del pedido"
+       aria-valuemin="0" aria-valuemax="{{ pasos|length }}" aria-valuenow="{{ actual + 1 }}">
+    <div class="progress-bar bg-success" style="width: {{ ((actual + 1) / pasos|length * 100)|round|int }}%"></div>
+  </div>
+  <ol class="list-unstyled d-flex flex-wrap gap-3 small mb-0">
+    {% for clave in pasos %}
+    <li class="{% if loop.index0 <= actual %}fw-semibold text-success{% else %}text-body-secondary{% endif %}">
+      {{ loop.index }}. {{ ETIQUETAS[clave] }}
+    </li>
+    {% endfor %}
+  </ol>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card card-kaab p-4">
+      <h2 class="h5 kaab-seccion-titulo">Productos</h2>
+      <table class="table mb-0">
+        <thead><tr><th scope="col">Producto</th><th scope="col" class="text-end">Cantidad</th><th scope="col" class="text-end">Precio</th></tr></thead>
+        <tbody>
+        {% for it in items %}
+          <tr>
+            <td>{{ it.nombre }} <span class="small text-body-secondary">{{ it.presentacion }}</span></td>
+            <td class="text-end">{{ it.cantidad }}</td>
+            <td class="text-end">{{ it.precio_unitario_mxn|pesos }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><th colspan="2" class="text-end fw-normal">Envío</th><td class="text-end">{% if p.envio_mxn == 0 %}Gratis{% else %}{{ p.envio_mxn|pesos }}{% endif %}</td></tr>
+          <tr><th colspan="2" class="text-end">Total</th><td class="text-end precio">{{ p.total_mxn|pesos }}</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card card-kaab p-4">
+      <h2 class="h5 kaab-seccion-titulo">Datos del pedido</h2>
+      <dl class="row small mb-0">
+        <dt class="col-5">Cliente</dt><dd class="col-7">{{ p.nombre }}</dd>
+        <dt class="col-5">Correo</dt><dd class="col-7">{{ p.correo }}</dd>
+        <dt class="col-5">Teléfono</dt><dd class="col-7">{{ p.telefono }}</dd>
+        <dt class="col-5">RFC</dt><dd class="col-7">{{ p.rfc or 'No proporcionado' }}</dd>
+        <dt class="col-5">Envío a</dt><dd class="col-7">{{ p.direccion_envio }}</dd>
+        <dt class="col-5">Pago</dt><dd class="col-7">{{ 'Tarjeta (simulado)' if p.metodo_pago == 'tarjeta_simulada' else 'Transferencia bancaria' }}</dd>
+        <dt class="col-5">Canal</dt><dd class="col-7">{{ 'Tienda en línea (México)' if p.canal == 'tienda_mx' else 'Tienda en línea (UE)' }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+{% endblock %}

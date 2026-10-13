@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- FICTICIO: sitio de un laboratorio educativo. Kaab Orgánicos no existe. -->
+  <title>Contacto · Kaab Orgánicos</title>
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/kaab.css">
+</head>
+<body>
+<a class="visually-hidden-focusable" href="#contenido">Ir al contenido</a>
+
+<nav class="navbar navbar-expand-lg navbar-dark kaab-nav sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="index.html"><span class="kaab-logo" aria-hidden="true">⬡</span>Kaab <span class="fw-light">Orgánicos</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="menu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" href="nosotros.html">Nosotros</a></li>
+        <li class="nav-item"><a class="nav-link" href="productos.html">Productos</a></li>
+        <li class="nav-item"><a class="nav-link" href="canales.html">Dónde comprar</a></li>
+        <li class="nav-item"><a class="nav-link active" aria-current="page" href="contacto.html">Contacto</a></li>
+      </ul>
+      <a class="btn btn-kaab btn-sm ms-lg-3 mt-2 mt-lg-0" href="http://192.168.61.20/">Tienda en línea</a>
+    </div>
+  </div>
+</nav>
+
+<main id="contenido" class="container py-5">
+  <h1 class="kaab-seccion-titulo">Contacto</h1>
+  <p class="lead">¿Eres cliente, distribuidor o periodista? Escríbenos o llámanos.</p>
+
+  <div class="row g-4 mt-1">
+    <div class="col-lg-5">
+      <div class="card card-kaab h-100 p-4">
+        <h2 class="h5 kaab-seccion-titulo">Oficinas centrales</h2>
+        <address class="mb-3">
+          Calle Colmena 101<br>
+          Parque Industrial Kaab<br>
+          97000 Mérida, Yucatán, México
+        </address>
+        <h2 class="h6 kaab-seccion-titulo">Horario</h2>
+        <p class="mb-3">Lunes a viernes, 9:00 a 18:00 h.<br>Sábados, por cita.</p>
+        <h2 class="h6 kaab-seccion-titulo">Medios</h2>
+        <ul class="list-unstyled mb-0">
+          <li>Teléfono: <a href="tel:+529995550100">+52 999 555 0100</a></li>
+          <li>Correo general: <a href="mailto:contacto@kaab-organicos.example">contacto@kaab-organicos.example</a></li>
+          <li>Ventas a distribuidores: <a href="mailto:ventas@kaab-organicos.example">ventas@kaab-organicos.example</a></li>
+          <li>Privacidad de datos: <a href="mailto:privacidad@kaab-organicos.example">privacidad@kaab-organicos.example</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card card-kaab p-4">
+        <h2 class="h5 kaab-seccion-titulo">Escríbenos</h2>
+        <form action="#" method="post" onsubmit="event.preventDefault(); document.getElementById('aviso-envio').classList.remove('d-none');">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="nombre">Nombre</label>
+              <input class="form-control" id="nombre" name="nombre" autocomplete="name" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="correo">Correo</label>
+              <input class="form-control" id="correo" name="correo" type="email" autocomplete="email" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="tema">Motivo</label>
+              <select class="form-select" id="tema" name="tema">
+                <option>Un pedido</option>
+                <option>Compra para distribuidor</option>
+                <option>Certificación y trazabilidad</option>
+                <option>Protección de mis datos personales</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="mensaje">Mensaje</label>
+              <textarea class="form-control" id="mensaje" name="mensaje" rows="4" required></textarea>
+            </div>
+            <div class="col-12">
+              <button class="btn btn-kaab" type="submit">Enviar</button>
+              <span class="small text-body-secondary ms-2">Respondemos en 2 días hábiles.</span>
+            </div>
+          </div>
+        </form>
+        <div id="aviso-envio" class="alert alert-info d-none mt-3 mb-0" role="status">Formulario de demostración: este sitio no envía mensajes.</div>
+      </div>
+    </div>
+  </div>
+  <!-- TODO: quitar antes de publicar. Línea directa: 9992427068 -->
+</main>
+
+<footer class="kaab-footer py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <h2 class="h6 text-uppercase">Kaab Orgánicos, S.A. de C.V.</h2>
+        <p class="small mb-0">Miel y derivados orgánicos desde Yucatán.</p>
+      </div>
+      <div class="col-md-4">
+        <h2 class="h6 text-uppercase">Visítanos</h2>
+        <address class="small mb-0">Calle Colmena 101, Parque Industrial Kaab<br>97000 Mérida, Yucatán, México</address>
+      </div>
+      <div class="col-md-4">
+        <h2 class="h6 text-uppercase">Contacto</h2>
+        <p class="small mb-0">Tel. <a href="tel:+529995550100">+52 999 555 0100</a><br>
+        <a href="mailto:contacto@kaab-organicos.example">contacto@kaab-organicos.example</a><br>
+        Lunes a viernes, 9:00–18:00</p>
+      </div>
+    </div>
+    <hr class="border-secondary my-4">
+    <p class="small mb-0">© 2026 Kaab Orgánicos · <a href="aviso-privacidad.html">Aviso de privacidad</a> · <em>Sitio ficticio para formación.</em></p>
+  </div>
+</footer>
+<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
