@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PHP2SHELL</title>
+<link rel="stylesheet" href="fonts-embedded.css">
+<style>
+  @page { size: 8.5in 11in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 8.5in; height: 11in; background: #050806; overflow: hidden; }
+
+  :root{
+    --bg:        #060a08;
+    --bg2:       #0b120d;
+    --grid:      #10261a;
+    --green:     #39ff6a;
+    --green-dim: #1f9e4c;
+    --green-ink: #c9ffd9;
+    --red:       #ff2d4e;
+    --amber:     #ffb000;
+    --cyan:      #2ee6c8;
+    --ink:       #d8ffe6;
+    --mut:       #6f9c82;
+    --mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
+    --head: 'Black Ops One', 'JetBrains Mono', monospace;
+    --code: 'JetBrains Mono', monospace;
+  }
+
+  body{
+    font-family: var(--mono);
+    color: var(--ink);
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* ---- full-bleed background layers ---- */
+  .bg-base{
+    position: fixed; inset: 0; z-index: -5;
+    background:
+      radial-gradient(ellipse 140% 90% at 15% -10%, #0e2a1a 0%, transparent 55%),
+      radial-gradient(ellipse 120% 80% at 110% 115%, #2a0b14 0%, transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 55%, var(--bg) 100%);
+  }
+  .bg-grid{
+    position: fixed; inset: 0; z-index: -4;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: .55;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, #000 55%, transparent 100%);
+  }
+  .bg-hex{
+    position: fixed; inset: 0; z-index: -3; opacity: .5;
+    font-family: var(--code); font-size: 10px; line-height: 13px; letter-spacing: 2px;
+    color: #103a1f; white-space: pre; overflow: hidden; padding: 4px 10px;
+    user-select: none;
+  }
+  .bg-scan{
+    position: fixed; inset: 0; z-index: 5; pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+      rgba(0,255,100,.035) 3px, rgba(0,0,0,0) 4px
+    );
+  }
+  .bg-vignette{
+    position: fixed; inset: 0; z-index: 5; pointer-events: none;
+    box-shadow: inset 0 0 220px 40px #000000c0;
+  }
+  .bg-noise-edge{
+    position: fixed; inset:0; z-index:5; pointer-events:none;
+    border: 10px solid transparent;
+    background:
+      linear-gradient(90deg, #ff2d4e22 0, transparent 2px) left,
+      linear-gradient(270deg, #2ee6c822 0, transparent 2px) right;
+  }
+
+  .sheet{
+    position: relative; z-index: 1;
+    width: 8.5in; height: 11in;
+    padding: .22in .34in .18in .34in;
+    display: flex; flex-direction: column;
+    gap: 9px;
+  }
+
+  /* ---------------- terminal chrome bar ---------------- */
+  .chrome{
+    display:flex; align-items:center; gap:10px;
+    background: #081a0f; border: 1px solid #184a2c;
+    border-radius: 7px; padding: 6px 12px;
+    font-size: 11px; color: var(--green-dim); letter-spacing: .5px;
+  }
+  .dots{ display:flex; gap:6px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .dot.r{ background:#ff5f56 } .dot.y{ background:#ffbd2e } .dot.g{ background:#27c93f }
+  .chrome .path{ flex:1; text-align:center; color:#7fdca0; }
+  .chrome .tag{
+    font-size:10px; font-weight:700; color:#ffb000; border:1px solid #5a4100;
+    background:#2a1f00; border-radius:3px; padding:1px 7px; letter-spacing:1px;
+  }
+
+  /* ---------------- header / glitch title ---------------- */
+  .hero{ text-align:center; padding: 6px 0 2px; position:relative; }
+  .kicker{
+    font-size: 12.5px; letter-spacing: 4px; color: var(--cyan);
+    margin-bottom: 4px;
+  }
+  .kicker::before, .kicker::after{ content: "// "; color: var(--green-dim); }
+  h1.glitch{
+    font-family: var(--head);
+    font-size: 108px; line-height: .92; letter-spacing: 2px;
+    color: var(--green);
+    text-shadow: 0 0 26px #39ff6a99, 0 0 70px #39ff6a44;
+    margin: 0 0 2px 0;
+    position: relative;
+  }
+  h1.glitch::before, h1.glitch::after{
+    content: attr(data-text);
+    position: absolute; left: 0; top: 0; width: 100%;
+    font-family: inherit; letter-spacing: inherit;
+  }
+  h1.glitch::before{
+    color: var(--red); opacity: .8; mix-blend-mode: screen;
+    clip-path: polygon(0 0, 100% 0, 100% 22%, 0 22%, 0 48%, 100% 48%, 100% 61%, 0 61%);
+    transform: translate(-7px, -4px);
+  }
+  h1.glitch::after{
+    color: var(--cyan); opacity: .75; mix-blend-mode: screen;
+    clip-path: polygon(0 30%, 100% 30%, 100% 44%, 0 44%, 0 72%, 100% 72%, 100% 100%, 0 100%);
+    transform: translate(7px, 4px);
+  }
+  .cves{
+    font-family: var(--code); font-weight: 700; font-size: 20px;
+    color: var(--ink); letter-spacing: 1px;
+  }
+  .cves .sep{ color: var(--mut); padding: 0 10px; }
+  .tagline{
+    font-size: 15px; letter-spacing: 3px; color: var(--amber);
+    margin-top: 6px; font-weight: 700;
+  }
+  .badgerow{ display:flex; justify-content:center; gap:10px; margin-top:10px; }
+  .badge{
+    font-family: var(--code); font-weight:700; font-size:12.5px; letter-spacing: 1px;
+    padding: 5px 13px; border-radius: 4px; border: 1px solid;
+  }
+  .badge.crit{ color:#ffe3e9; background:#43091a; border-color:var(--red); box-shadow:0 0 14px #ff2d4e55; }
+  .badge.auth{ color:#eafff0; background:#0d2a1a; border-color:var(--green); }
+  .badge.info{ color:#fff3da; background:#2a1f00; border-color:var(--amber); }
+
+  /* ---------------- stat strip ---------------- */
+  .stats{ display:flex; gap:10px; }
+  .stat{
+    flex:1; text-align:center; background:#081a10cc; border:1px solid #184a2c;
+    border-radius:8px; padding: 10px 6px 8px;
+  }
+  .stat .num{ font-family:var(--head); font-size:36px; color:var(--green); text-shadow:0 0 16px #39ff6a66; }
+  .stat .lbl{ font-size:10.5px; letter-spacing:.6px; color:var(--mut); margin-top:2px; }
+
+  /* ---------------- section label ---------------- */
+  .label{
+    font-size: 12px; letter-spacing: 3px; color: var(--green);
+    display:flex; align-items:center; gap:8px; margin-top: 2px;
+  }
+  .label::before{ content:"▸"; color:var(--red); }
+  .label .rule{ flex:1; height:1px; background:linear-gradient(90deg,#184a2c, transparent); }
+
+  /* ---------------- timeline ---------------- */
+  .timeline{ position:relative; padding: 18px 6px 6px; }
+  .timeline .line{ position:absolute; left:4%; right:4%; top:28px; height:2px; background:#184a2c; }
+  .tl-row{ display:flex; justify-content:space-between; }
+  .tl{ flex:1; text-align:center; position:relative; font-size:10.5px; }
+  .tl .node{
+    width:13px; height:13px; border-radius:50%; margin:0 auto 6px; position:relative; z-index:2;
+    background: var(--bg); border:2px solid var(--green);
+  }
+  .tl.alert .node{ border-color: var(--red); box-shadow:0 0 10px #ff2d4eaa; }
+  .tl .date{ color:var(--amber); font-weight:700; }
+  .tl .ev{ color:var(--ink); display:block; margin-top:1px; }
+  .tl .sub{ color:var(--mut); display:block; font-size:9.5px; }
+
+  /* ---------------- table ---------------- */
+  table.vt{ width:100%; border-collapse: collapse; font-size: 13px; }
+  table.vt th{
+    text-align:left; font-size: 10.5px; letter-spacing:1.5px; color: var(--mut);
+    border-bottom: 1px solid #184a2c; padding: 4px 8px 6px;
+  }
+  table.vt td{ padding: 5px 8px; border-bottom: 1px solid #10261a; }
+  table.vt td.br{ font-weight:700; color: var(--ink); }
+  table.vt td.vuln{ color: var(--red); font-family: var(--code); }
+  table.vt td.fix{ color: var(--green); font-family: var(--code); font-weight:700; }
+  table.vt tr:last-child td{ border-bottom:none; }
+  .eol-note{ margin-top:6px; font-size:11px; color:var(--amber); }
+  .eol-note b{ color:#ffd98a; }
+
+  /* ---------------- two column ---------------- */
+  .cols{ display:flex; gap:14px; flex:1; min-height:0; }
+  .col{ flex:1; background:#081a10cc; border:1px solid #184a2c; border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .chip{
+    font-size:11px; padding:4px 9px; border-radius:3px; border:1px solid #184a2c;
+    background:#0d2317; color:var(--ink);
+  }
+  .chip.net{ border-color:#5a4100; color:#ffd98a; background:#201803; }
+  .note{ font-size:11.5px; color:var(--mut); margin-top:8px; line-height:1.45; }
+  .note b{ color:var(--red); }
+
+  .term{
+    font-family: var(--code); font-size: 11.3px; line-height: 1.75;
+    background:#030905; border-radius:5px; padding:8px 10px; margin-top:6px;
+    color:#bdfcd0; flex:1;
+  }
+  .term .p{ color: var(--green); }
+  .term .c{ color:#7fdca0; }
+  .term .r{ color: var(--red); }
+  .term .mut{ color: var(--mut); }
+  .term .l{ display:block; }
+
+  /* ---------------- footer ---------------- */
+  .footer{ display:flex; align-items:center; gap:14px; margin-top:2px; }
+  .qr-box{
+    background:#fff; padding:8px; border-radius:6px; border:2px solid var(--green);
+    width:88px; height:88px; flex-shrink:0; box-shadow:0 0 14px #39ff6a55;
+  }
+  .qr-box img{ width:100%; height:100%; display:block; }
+  .footer .mid{ flex:1; }
+  .footer .brand{ font-family: var(--head); font-size:17px; color:var(--ink); letter-spacing:.5px; }
+  .footer .sub2{ font-size:11px; color:var(--cyan); margin-top:2px; letter-spacing:.5px; }
+  .footer .cta{ font-size:10.5px; color:var(--amber); margin-top:3px; }
+  .footer .src{ text-align:right; font-size:9px; color:var(--mut); line-height:1.6; white-space:nowrap; }
+  .footer .src b{ color:var(--green-dim); }
+
+  .redacted{ display:inline-block; background:#111; color:#111; padding:0 4px; border-radius:2px; }
+</style>
+</head>
+<body>
+  <div class="bg-base"></div>
+  <div class="bg-grid"></div>
+  <pre class="bg-hex" id="hexbg"></pre>
+  <div class="bg-scan"></div>
+  <div class="bg-vignette"></div>
+  <div class="bg-noise-edge"></div>
+
+  <div class="sheet">
+
+    <div class="chrome">
+      <span class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>
+      <span class="path">root@harborline:~# tail -f /var/log/apache2/error.log <span class="redacted">php2shell.poc</span></span>
+      <span class="tag">INFOCON: YELLOW</span>
+    </div>
+
+    <div class="hero">
+      <div class="kicker">UNAUTHENTICATED &nbsp;·&nbsp; PRE-AUTH &nbsp;·&nbsp; REMOTE CODE EXECUTION</div>
+      <h1 class="glitch" data-text="PHP2SHELL">PHP2SHELL</h1>
+      <div class="cves">CVE-2026-109618 <span class="sep">/</span> CVE-2026-109619</div>
+      <div class="tagline">TWO BUGS. ZERO CREDENTIALS. YOUR ENTIRE PHP STACK.</div>
+      <div class="badgerow">
+        <span class="badge crit">CVSS 9.2 — CRITICAL</span>
+        <span class="badge auth">PHP 5.4 → 8.5 AFFECTED</span>
+        <span class="badge info">DISCLOSED 2026-10-21</span>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num">~70%</div><div class="lbl">OF THE WEB RUNS PHP</div></div>
+      <div class="stat"><div class="num">0</div><div class="lbl">CLICKS OR LOGINS NEEDED</div></div>
+      <div class="stat"><div class="num">mod_php</div><div class="lbl">HIGHEST-RISK SAPI</div></div>
+      <div class="stat"><div class="num">AUG→OCT</div><div class="lbl">FOUND TO FIXED, 2026</div></div>
+    </div>
+
+    <div>
+      <div class="label">DISCLOSURE TIMELINE<span class="rule"></span></div>
+      <div class="timeline">
+        <div class="line"></div>
+        <div class="tl-row">
+          <div class="tl"><div class="node"></div><span class="date">AUG 19</span><span class="ev">Bug found</span><span class="sub">Wiz Research, AI-assisted</span></div>
+          <div class="tl"><div class="node"></div><span class="date">AUG 24</span><span class="ev">Reported</span><span class="sub">to the PHP security team</span></div>
+          <div class="tl"><div class="node"></div><span class="date">OCT 21</span><span class="ev">Patched</span><span class="sub">8.5.12 / 8.4.27 / 8.3.36 / 8.2.35</span></div>
+          <div class="tl alert"><div class="node"></div><span class="date">OCT 21</span><span class="ev">Exploited</span><span class="sub">same-day, in the wild</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cols" style="flex:0 0 auto;">
+      <div class="col" style="flex:1.3;">
+        <div class="label">PATCHED VERSIONS<span class="rule"></span></div>
+        <table class="vt">
+          <tr><th>BRANCH</th><th>VULNERABLE</th><th>PATCHED</th></tr>
+          <tr><td class="br">8.5</td><td class="vuln">&lt; 8.5.12</td><td class="fix">8.5.12</td></tr>
+          <tr><td class="br">8.4</td><td class="vuln">&lt; 8.4.27</td><td class="fix">8.4.27</td></tr>
+          <tr><td class="br">8.3</td><td class="vuln">&lt; 8.3.36</td><td class="fix">8.3.36</td></tr>
+          <tr><td class="br">8.2</td><td class="vuln">&lt; 8.2.35</td><td class="fix">8.2.35</td></tr>
+        </table>
+        <div class="eol-note">⚠ PHP ≤ 8.1 is <b>end-of-life</b> — no official patch. Upgrade the runtime, not just the app.</div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="label">WHO'S EXPOSED<span class="rule"></span></div>
+        <div class="chips">
+          <span class="chip">WordPress</span><span class="chip">Drupal</span><span class="chip">Joomla</span>
+          <span class="chip">Laravel</span><span class="chip">Custom apps</span>
+          <span class="chip net">Cisco</span><span class="chip net">pfSense</span>
+          <span class="chip net">OPNsense</span><span class="chip net">Palo Alto</span>
+        </div>
+        <div class="note">The flaw lives in <b>PHP core memory management</b> — not in any app's code.
+        Patching WordPress plugins does nothing. Only patching PHP itself helps.</div>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div class="col">
+        <div class="label">ROOT CAUSE, IN SHORT<span class="rule"></span></div>
+        <div class="term">
+          <span class="l"><span class="p">$</span> <span class="c">109618</span> — OOM during request init leaves memory <span class="r">half-built</span>; shutdown trusts it anyway.</span>
+          <span class="l"><span class="p">$</span> <span class="c">109619</span> — stale global state <span class="r">outlives</span> its request; next request on the same worker reuses it &#8594; <span class="r">use-after-free</span>.</span>
+          <span class="l"><span class="mut"># trigger surface: a single multipart/form-data upload. no auth. no app bug required.</span></span>
+          <span class="l"><span class="mut">severity .......... </span><span class="r">CVSS 9.2 / CRITICAL</span></span>
+          <span class="l"><span class="mut">status ............ </span><span class="p">root cause mapped_</span></span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="label">PATCH. NOW.<span class="rule"></span></div>
+        <div class="term">
+          <span class="l"><span class="p">$</span> apt/yum upgrade php &nbsp;<span class="c">→ 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35</span></span>
+          <span class="l"><span class="p">$</span> systemctl restart apache2 php-fpm &nbsp;<span class="mut"># old workers keep old code</span></span>
+          <span class="l"><span class="p">$</span> can't patch today? &nbsp;<span class="c">session.upload_progress.enabled = 0</span></span>
+          <span class="l"><span class="mut"># mitigations reduce exposure. they do NOT make you safe. PHP's own team says so.</span></span>
+          <span class="l"><span class="mut">status ............ </span><span class="p">awaiting your move_</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="qr-box"><img src="qr.svg" alt="QR"></div>
+      <div class="mid">
+        <div class="brand">ETHICAL HACKING LAB // CERTIFICACIÓN EN CIBERDEFENSA AVANZADA — UAM</div>
+        <div class="sub2">LIVE VULNERABLE VM DEMO IN CLASS · labs/php2shell</div>
+        <div class="cta">Scan → official PHP security advisory. Ask your instructor for the lab repo.</div>
+      </div>
+      <div class="src">
+        Sources: <b>PHP Foundation</b> · <b>Wiz Research</b> · <b>SANS ISC</b><br>
+        <b>watchTowr</b> · <b>Sansec</b> · <b>Bitdefender</b> — Oct 2026<br>
+        Poster for classroom &amp; CS-building awareness use.
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // deterministic hex/binary background filler (no RNG — stays identical on re-render)
+  (function(){
+    var rows = 72, cols = 150, out = [];
+    var chars = "01";
+    var seed = 1337;
+    function next(){ seed = (seed * 1103515245 + 12345) % 2147483648; return seed; }
+    for (var r = 0; r < rows; r++){
+      var line = "";
+      for (var c = 0; c < cols; c++){
+        line += (next() % 7 === 0) ? chars[next() % 2] : " ";
+      }
+      out.push(line);
+    }
+    document.getElementById('hexbg').textContent = out.join("\n");
+  })();
+</script>
+</body>
+</html>

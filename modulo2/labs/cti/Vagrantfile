@@ -1,0 +1,35 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Laboratorio «cti» — Módulo II. Plataforma de inteligencia de amenazas OpenCTI,
+# instalada con Docker según https://docs.opencti.io/latest/deployment/installation/#using-docker
+# Uso exclusivo en red aislada (host-only de VirtualBox). Ver README.md.
+
+LAB_IP = "192.168.63.10"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "cloud-image/ubuntu-26.04"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  config.vm.define "opencti" do |cti|
+    cti.vm.hostname = "opencti"
+
+    # OpenCTI en http://192.168.63.10:8080
+    cti.vm.network "private_network", ip: LAB_IP
+
+    # La pila completa (Elasticsearch, Redis, RabbitMQ, S3, plataforma, workers,
+    # conectores y XTM One) son ~20 contenedores: necesita memoria.
+    cti.vm.provider "virtualbox" do |vb|
+      vb.name = "cti-opencti"
+      vb.memory = 8192
+      vb.cpus = 4
+      # La imagen cloud-image trae el IO-APIC apagado: sin él, Ubuntu solo ve 1 CPU.
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    end
+
+    # La imagen trae 10 GB: no caben las imágenes de Docker. cloud-init amplía la partición al arrancar.
+    cti.vm.disk :disk, size: "40GB", primary: true
+
+    cti.vm.provision "shell", path: "provision/opencti.sh", args: [LAB_IP]
+  end
+end

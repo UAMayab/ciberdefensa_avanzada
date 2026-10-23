@@ -1,0 +1,36 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Lab "php2shell" — Ethical Hacking demo for CVE-2026-109618 / CVE-2026-109619.
+# Apache + mod_php 8.5.4 (Ubuntu 26.04 release build, BEFORE the USN-8948-1 fix),
+# serving a small PHP site. Deliberately vulnerable: use only on an isolated
+# host-only network. See README.md.
+
+LAB_IP = "192.168.64.10"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "cloud-image/ubuntu-26.04"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  config.vm.define "php-demo" do |web|
+    web.vm.hostname = "harborline-web"
+
+    # Site on http://192.168.64.10 (reachable from the host and from a Kali VM on the same host-only net)
+    web.vm.network "private_network", ip: LAB_IP
+
+    web.vm.provider "virtualbox" do |vb|
+      vb.name = "php2shell-demo"
+      vb.memory = 2048
+      vb.cpus = 2
+      # The cloud-image box ships with IO-APIC off: without it Ubuntu sees only 1 CPU.
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    end
+
+    web.vm.provision "file", source: "provision/site", destination: "/tmp/site"
+    web.vm.provision "shell", path: "provision/setup.sh", args: [LAB_IP]
+
+    # Fix the vulnerability (for the "verify the patch" exercise):
+    #   vagrant provision --provision-with patch
+    web.vm.provision "patch", type: "shell", path: "provision/patch.sh", run: "never"
+  end
+end
