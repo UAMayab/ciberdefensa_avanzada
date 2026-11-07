@@ -1,0 +1,23 @@
+#!/bin/sh
+# Miniworkshop Bettercap — Episodio 1 (detección en el propio equipo).
+# Vigila la tabla de vecinos buscando LA firma del ARP spoofing: una misma MAC
+# respondiendo por dos direcciones IP distintas. Un atacante que se hace pasar
+# por el gateway tiene que contestar con su MAC, que ya está en la tabla como
+# la suya propia. No necesita línea base: detecta el hecho, no el cambio.
+#
+# Uso:  arp-guard [segundos]     (por defecto cada 2 s; Ctrl-C para salir)
+INTERVALO=${1:-2}
+PREV=""
+while :; do
+  # "IP MAC" de cada vecino con MAC conocida; después, MAC que aparece 2+ veces.
+  DUP=$(ip -4 neigh show | awk '/lladdr/ {print $5, $1}' | sort \
+        | awk '{ip[$1]=ip[$1] " " $2; n[$1]++} END {for (m in n) if (n[m]>1) print m ":" ip[m]}')
+  if [ -n "$DUP" ] && [ "$DUP" != "$PREV" ]; then
+    echo "$(date '+%F %T') ALERTA: una misma MAC responde por varias IP -> $DUP"
+    logger -t arp-guard "MAC duplicada en la tabla de vecinos: $DUP" 2>/dev/null
+  elif [ -z "$DUP" ] && [ -n "$PREV" ]; then
+    echo "$(date '+%F %T') OK: la tabla de vecinos vuelve a ser coherente"
+  fi
+  PREV=$DUP
+  sleep "$INTERVALO"
+done

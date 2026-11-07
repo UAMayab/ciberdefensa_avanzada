@@ -1,0 +1,6 @@
+# Cenote Logistica S.A. de C.V. - EMPRESA FICTICIA (laboratorio UAM)
+unidad,ruta,km_mes,incidentes,cadena_frio_ok
+CL-014,Merida-Progreso,4120,0,si
+CL-021,Merida-Uman,2890,1,si
+CL-033,Merida-Valladolid,6310,0,si
+CL-047,Merida-Cancun,9875,2,no

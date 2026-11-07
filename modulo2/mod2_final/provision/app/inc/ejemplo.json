@@ -1,0 +1,386 @@
+{
+ "formato": "grc-respaldo",
+ "version": 1,
+ "exportado": "2026-11-01T00:00:00-06:00",
+ "organizacion": {
+  "nombre": "Transportes Chaac, S.A. de C.V. (EJEMPLO FICTICIO)",
+  "sector": "Logística y transporte",
+  "objetivo_negocio": "Entregar carga a tiempo en la península de Yucatán con rastreo en línea para el cliente, manteniendo al menos 98 % de entregas puntuales y sin fugas de datos de clientes.",
+  "contexto": "Empresa mediana de Mérida: 40 camiones, 85 empleados, una bodega en Mérida y una oficina en Cancún. Los clientes consultan el estado de su envío en un portal web. Opera en temporada de huracanes (junio–noviembre) y debe cumplir con la LFPDPPP por los datos personales de sus clientes. Empresa inventada para este ejemplo.",
+  "alcance": "Sistemas de TI de la oficina central y la bodega de Mérida. Quedan fuera los equipos de la oficina de Cancún y los sistemas a bordo de los camiones.",
+  "evaluador": "Estudiante (ejemplo)",
+  "tolerancia_nivel": 3
+ },
+ "tablas": {
+  "activos": [
+   {
+    "id": 1,
+    "fecha": "2026-10-19",
+    "tipo_id": 1,
+    "nombre": "Servidor del portal de rastreo",
+    "departamento": "Tecnologías de la Información",
+    "responsable": "Ing. Laura Pech, Jefa de TI",
+    "sistema_operativo": "Ubuntu Server 20.04 LTS",
+    "descripcion_funcion": "Publica el portal donde los clientes consultan la ubicación y el estado de sus envíos.",
+    "participacion": "Directa",
+    "criticidad": "Alta",
+    "clasificacion": "Confidencial",
+    "ubicacion": "DMZ · 10.0.2.10"
+   },
+   {
+    "id": 2,
+    "fecha": "2026-10-19",
+    "tipo_id": 4,
+    "nombre": "Base de datos de clientes y envíos",
+    "departamento": "Tecnologías de la Información",
+    "responsable": "Ing. Laura Pech, Jefa de TI",
+    "sistema_operativo": "Ubuntu Server 20.04 LTS (MySQL 5.7)",
+    "descripcion_funcion": "Guarda los datos personales de los clientes, las guías y el historial de entregas.",
+    "participacion": "Directa",
+    "criticidad": "Crítica",
+    "clasificacion": "Restringida",
+    "ubicacion": "Sala de servidores · 10.0.1.20"
+   },
+   {
+    "id": 3,
+    "fecha": "2026-10-20",
+    "tipo_id": 3,
+    "nombre": "ERP de facturación y cobranza",
+    "departamento": "Finanzas y Contabilidad",
+    "responsable": "C.P. Jorge Canul, Gerente de Finanzas",
+    "sistema_operativo": "Windows Server 2016",
+    "descripcion_funcion": "Emite facturas electrónicas, registra los cobros y concilia las cuentas de los clientes.",
+    "participacion": "Directa",
+    "criticidad": "Alta",
+    "clasificacion": "Confidencial",
+    "ubicacion": "Sala de servidores · 10.0.1.30"
+   },
+   {
+    "id": 4,
+    "fecha": "2026-10-20",
+    "tipo_id": 2,
+    "nombre": "Laptops de despacho",
+    "departamento": "Operaciones",
+    "responsable": "Lic. Marisol Tuz, Jefa de Operaciones",
+    "sistema_operativo": "Windows 10",
+    "descripcion_funcion": "Asignan rutas y camiones y capturan las entregas; las usan 12 despachadores.",
+    "participacion": "Directa",
+    "criticidad": "Media",
+    "clasificacion": "Interna",
+    "ubicacion": "Oficina de operaciones"
+   },
+   {
+    "id": 5,
+    "fecha": "2026-10-21",
+    "tipo_id": 5,
+    "nombre": "Firewall perimetral",
+    "departamento": "Tecnologías de la Información",
+    "responsable": "Ing. Laura Pech, Jefa de TI",
+    "sistema_operativo": "Firmware del fabricante (2018)",
+    "descripcion_funcion": "Separa la red interna de Internet y publica el portal de rastreo.",
+    "participacion": "Indirecta",
+    "criticidad": "Alta",
+    "clasificacion": "Interna",
+    "ubicacion": "Sala de servidores · 10.0.0.1"
+   },
+   {
+    "id": 6,
+    "fecha": "2026-10-21",
+    "tipo_id": 7,
+    "nombre": "Cámaras de videovigilancia de la bodega",
+    "departamento": "Operaciones",
+    "responsable": "Lic. Marisol Tuz, Jefa de Operaciones",
+    "sistema_operativo": "Firmware / appliance",
+    "descripcion_funcion": "Vigilan el andén de carga y la entrada de la bodega.",
+    "participacion": "Indirecta",
+    "criticidad": "Baja",
+    "clasificacion": "Interna",
+    "ubicacion": "Bodega Mérida · red de servidores"
+   },
+   {
+    "id": 7,
+    "fecha": "2026-10-22",
+    "tipo_id": 8,
+    "nombre": "Correo corporativo (SaaS)",
+    "departamento": "Dirección General",
+    "responsable": "Lic. Ricardo Chan, Director General",
+    "sistema_operativo": "Servicio en la nube (SaaS)",
+    "descripcion_funcion": "Comunicación con clientes y proveedores; confirma pedidos y envía facturas.",
+    "participacion": "Directa",
+    "criticidad": "Alta",
+    "clasificacion": "Confidencial",
+    "ubicacion": "Nube del proveedor"
+   }
+  ],
+  "vulnerabilidades": [
+   {
+    "id": 1,
+    "activo_id": 1,
+    "descripcion": "El formulario de rastreo no valida el parámetro «guia» y permite inyección SQL.",
+    "cvss": 9.8,
+    "cve": "",
+    "vector_cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+   },
+   {
+    "id": 2,
+    "activo_id": 1,
+    "descripcion": "El certificado TLS del portal se renueva a mano y nadie monitorea su fecha de vencimiento.",
+    "cvss": 5.3,
+    "cve": "",
+    "vector_cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+   },
+   {
+    "id": 3,
+    "activo_id": 2,
+    "descripcion": "La cuenta «root» de la base de datos acepta conexiones desde toda la red interna y los datos no están cifrados en reposo.",
+    "cvss": 8.1,
+    "cve": "",
+    "vector_cvss": ""
+   },
+   {
+    "id": 4,
+    "activo_id": 2,
+    "descripcion": "Los respaldos semanales se guardan en el mismo servidor y nunca se ha probado restaurarlos.",
+    "cvss": 6.2,
+    "cve": "",
+    "vector_cvss": ""
+   },
+   {
+    "id": 5,
+    "activo_id": 3,
+    "descripcion": "Windows Server 2016 sin los parches de seguridad de los últimos seis meses.",
+    "cvss": 8.8,
+    "cve": "",
+    "vector_cvss": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+   },
+   {
+    "id": 6,
+    "activo_id": 4,
+    "descripcion": "Los usuarios tienen permisos de administrador local y los discos no están cifrados.",
+    "cvss": 6.8,
+    "cve": "",
+    "vector_cvss": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+   },
+   {
+    "id": 7,
+    "activo_id": 5,
+    "descripcion": "El firmware de 2018 no se ha actualizado y la administración del firewall está expuesta a Internet (puerto 8443).",
+    "cvss": 9.1,
+    "cve": "",
+    "vector_cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+   },
+   {
+    "id": 8,
+    "activo_id": 6,
+    "descripcion": "Las cámaras conservan las credenciales de fábrica (admin/admin) y están en la misma red que los servidores.",
+    "cvss": 8.8,
+    "cve": "",
+    "vector_cvss": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+   },
+   {
+    "id": 9,
+    "activo_id": 7,
+    "descripcion": "Las cuentas de correo no tienen autenticación multifactor.",
+    "cvss": 7.5,
+    "cve": "",
+    "vector_cvss": ""
+   }
+  ],
+  "amenazas": [
+   {
+    "id": 1,
+    "vulnerabilidad_id": 1,
+    "fuente_id": 1,
+    "nombre": "Inyección SQL",
+    "descripcion": "Un atacante externo manipula el parámetro «guia» para leer o modificar la base de datos de clientes."
+   },
+   {
+    "id": 2,
+    "vulnerabilidad_id": 1,
+    "fuente_id": 1,
+    "nombre": "Toma del portal por un atacante",
+    "descripcion": "Un atacante usa la inyección para alterar el portal o publicar contenido falso, dañando la confianza de los clientes."
+   },
+   {
+    "id": 3,
+    "vulnerabilidad_id": 2,
+    "fuente_id": 2,
+    "nombre": "Caída del portal por certificado vencido",
+    "descripcion": "El administrador olvida renovar el certificado; los navegadores bloquean el portal y los clientes no pueden rastrear sus envíos."
+   },
+   {
+    "id": 4,
+    "vulnerabilidad_id": 3,
+    "fuente_id": 1,
+    "nombre": "Fuga de información por empleado interno",
+    "descripcion": "Un empleado con acceso a la red interna se conecta como root y copia los datos personales de los clientes."
+   },
+   {
+    "id": 5,
+    "vulnerabilidad_id": 4,
+    "fuente_id": 3,
+    "nombre": "Falla de disco del servidor",
+    "descripcion": "El disco falla; como el respaldo está en el mismo servidor, se pierden los datos y su copia."
+   },
+   {
+    "id": 6,
+    "vulnerabilidad_id": 5,
+    "fuente_id": 1,
+    "nombre": "Ransomware",
+    "descripcion": "Un malware aprovecha un fallo sin parchar y cifra el ERP; se detienen la facturación y la cobranza."
+   },
+   {
+    "id": 7,
+    "vulnerabilidad_id": 6,
+    "fuente_id": 1,
+    "nombre": "Robo de laptop",
+    "descripcion": "Una laptop sin cifrar se pierde o es robada con datos de envíos y credenciales guardadas."
+   },
+   {
+    "id": 8,
+    "vulnerabilidad_id": 6,
+    "fuente_id": 2,
+    "nombre": "Instalación de software malicioso por el usuario",
+    "descripcion": "Un despachador con permisos de administrador instala un programa infectado."
+   },
+   {
+    "id": 9,
+    "vulnerabilidad_id": 7,
+    "fuente_id": 1,
+    "nombre": "Intrusión por la administración del firewall",
+    "descripcion": "Un atacante accede al panel de administración expuesto y desactiva las reglas de protección."
+   },
+   {
+    "id": 10,
+    "vulnerabilidad_id": 8,
+    "fuente_id": 1,
+    "nombre": "Cámaras usadas como punto de entrada",
+    "descripcion": "Un atacante entra a las cámaras con la clave de fábrica y desde ahí avanza hacia los servidores."
+   },
+   {
+    "id": 11,
+    "vulnerabilidad_id": 9,
+    "fuente_id": 1,
+    "nombre": "Phishing y robo de credenciales de correo",
+    "descripcion": "Un correo falso roba la contraseña del Director y se usa para solicitar pagos fraudulentos a clientes y proveedores."
+   },
+   {
+    "id": 12,
+    "vulnerabilidad_id": 4,
+    "fuente_id": 4,
+    "nombre": "Inundación o huracán en la bodega",
+    "descripcion": "Un huracán inunda la sala de servidores y destruye el servidor y los respaldos que están junto a él."
+   }
+  ],
+  "riesgos": [
+   {
+    "id": 1,
+    "amenaza_id": 1,
+    "impacto": 5,
+    "probabilidad": 4,
+    "tratamiento_id": 1,
+    "justificacion": "Es el riesgo más alto: el portal está en Internet, la falla se explota sin autenticación y la base contiene datos personales regulados por la LFPDPPP. Corregir el código cuesta poco frente a una multa y la pérdida de clientes.",
+    "estado_id": 2,
+    "responsable": "Ing. Laura Pech",
+    "fecha_objetivo": "2026-11-20",
+    "control_propuesto": "Consultas parametrizadas, validación de entradas y un firewall de aplicaciones web (WAF)."
+   },
+   {
+    "id": 2,
+    "amenaza_id": 2,
+    "impacto": 3,
+    "probabilidad": 3,
+    "tratamiento_id": 1,
+    "justificacion": "Dañaría la imagen de la empresa, pero la operación de entregas continúa. Se corrige junto con R-001 porque comparten causa.",
+    "estado_id": 1,
+    "responsable": "Ing. Laura Pech",
+    "fecha_objetivo": "2026-12-15",
+    "control_propuesto": "Monitoreo de integridad del sitio y respaldo limpio del portal."
+   },
+   {
+    "id": 3,
+    "amenaza_id": 3,
+    "impacto": 2,
+    "probabilidad": 2,
+    "tratamiento_id": 1,
+    "justificacion": "El portal se cae unas horas, no se pierden datos. Se automatiza la renovación y el riesgo queda bajo; el costo es casi cero.",
+    "estado_id": 3,
+    "responsable": "Ing. Laura Pech",
+    "fecha_objetivo": "2026-10-30",
+    "control_propuesto": "Renovación automática del certificado con alerta a 30 días."
+   },
+   {
+    "id": 4,
+    "amenaza_id": 4,
+    "impacto": 4,
+    "probabilidad": 2,
+    "tratamiento_id": 1,
+    "justificacion": "Es poco probable porque requiere un empleado con acceso a la red interna, pero el impacto es alto: son datos personales. Se limita quién puede conectarse.",
+    "estado_id": 1,
+    "responsable": "Ing. Laura Pech",
+    "fecha_objetivo": "2027-01-31",
+    "control_propuesto": "Cuentas nominales con privilegios mínimos, restringir el acceso por IP y activar bitácoras de auditoría."
+   },
+   {
+    "id": 5,
+    "amenaza_id": 5,
+    "impacto": 4,
+    "probabilidad": 3,
+    "tratamiento_id": 1,
+    "justificacion": "Una falla de disco en un servidor de cinco años es común. Perder la base y su copia detendría el negocio varios días. Se separan los respaldos.",
+    "estado_id": 2,
+    "responsable": "Ing. Laura Pech",
+    "fecha_objetivo": "2026-12-01",
+    "control_propuesto": "Respaldos 3-2-1 con una copia fuera del sitio y prueba de restauración trimestral."
+   },
+   {
+    "id": 6,
+    "amenaza_id": 6,
+    "impacto": 5,
+    "probabilidad": 3,
+    "tratamiento_id": 1,
+    "justificacion": "Si el ERP se cifra, no se factura ni se cobra hasta recuperarlo. Los parches pendientes son la puerta de entrada más común del ransomware.",
+    "estado_id": 1,
+    "responsable": "C.P. Jorge Canul",
+    "fecha_objetivo": "2026-12-31",
+    "control_propuesto": "Programa mensual de parches, EDR en el servidor y copia sin conexión del ERP."
+   },
+   {
+    "id": 7,
+    "amenaza_id": 7,
+    "impacto": 3,
+    "probabilidad": 3,
+    "tratamiento_id": 2,
+    "justificacion": "Los datos de la laptop son limitados y las credenciales se rotan cada 90 días. Cifrar 12 equipos cuesta más que el daño esperado; la dirección lo acepta y lo revisa en un año.",
+    "estado_id": 4,
+    "responsable": "Lic. Marisol Tuz",
+    "fecha_objetivo": "2027-10-01",
+    "control_propuesto": null
+   },
+   {
+    "id": 8,
+    "amenaza_id": 9,
+    "impacto": 5,
+    "probabilidad": 4,
+    "tratamiento_id": 3,
+    "justificacion": "Un atacante con el firewall tendría control de toda la red. La administración no necesita estar en Internet: se elimina la exposición y se accede solo por VPN.",
+    "estado_id": 2,
+    "responsable": "Ing. Laura Pech",
+    "fecha_objetivo": "2026-11-10",
+    "control_propuesto": "Cerrar el puerto 8443 y administrar el equipo únicamente por VPN."
+   },
+   {
+    "id": 9,
+    "amenaza_id": 11,
+    "impacto": 4,
+    "probabilidad": 5,
+    "tratamiento_id": 1,
+    "justificacion": "El phishing es diario y la cuenta del Director permite solicitar pagos. Una contraseña robada bastaría sin autenticación multifactor.",
+    "estado_id": 1,
+    "responsable": "Ing. Laura Pech",
+    "fecha_objetivo": "2026-11-30",
+    "control_propuesto": "Activar autenticación multifactor y capacitación trimestral contra phishing."
+   }
+  ]
+ }
+}

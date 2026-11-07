@@ -1,0 +1,22 @@
+#!/bin/sh
+# Miniworkshop Bettercap — Episodio 2 (detección en el propio equipo).
+# Pregunta lo MISMO al mismo servidor DNS por dos transportes distintos:
+# UDP (el normal) y TCP. dns.spoof de Bettercap falsifica respuestas UDP; el
+# servidor de verdad contesta igual por los dos. Si las respuestas no
+# coinciden, alguien en medio está mintiendo por UDP.
+#
+# Uso:  dns-canario [nombre ...]     (por defecto, los tres nombres corporativos)
+SERVIDOR=10.70.10.254
+NOMBRES=${*:-"intranet.corp.lab pagos.corp.lab ftp.corp.lab"}
+malo=0
+for n in $NOMBRES; do
+  udp=$(dig +short +time=3 +tries=1 @"$SERVIDOR" "$n" A | tr '\n' ' ')
+  tcp=$(dig +short +time=3 +tries=1 +tcp @"$SERVIDOR" "$n" A | tr '\n' ' ')
+  if [ "$udp" = "$tcp" ]; then
+    printf 'OK       %-20s udp=%s tcp=%s\n' "$n" "$udp" "$tcp"
+  else
+    printf 'ALERTA   %-20s udp=%s tcp=%s  <-- NO COINCIDEN\n' "$n" "$udp" "$tcp"
+    malo=1
+  fi
+done
+exit $malo

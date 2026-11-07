@@ -1,0 +1,22 @@
+#!/bin/sh
+# Miniworkshop Bettercap — deja al nodo viendo SÓLO la red del laboratorio.
+#
+# Vagrant necesita el adaptador NAT (10.0.2.0/24) para `vagrant ssh`, y esa NAT
+# trae una ruta por defecto hacia Internet. Aquí se quita: el tráfico "hacia
+# afuera" pasa a ir por `gw` (o a ninguna parte, en `gw` mismo). El SSH de
+# Vagrant sigue funcionando porque llega por el reenvío de puertos, que sólo
+# necesita la ruta conectada 10.0.2.0/24 y no la ruta por defecto.
+#
+# Idempotente. Se ejecuta en cada `vagrant up` / `vagrant reload`; si reinicias
+# una VM desde dentro, vuelve a ejecutarlo a mano: `sudo lab-rutas`.
+. /etc/lab-red.conf
+
+ip route del default via 10.0.2.2 2>/dev/null || true
+
+if [ -n "${LAB_GW:-}" ]; then
+  ip route replace default via "$LAB_GW"
+fi
+
+if [ -n "${LAB_DNS:-}" ]; then
+  printf 'search corp.lab\nnameserver %s\n' "$LAB_DNS" > /etc/resolv.conf
+fi

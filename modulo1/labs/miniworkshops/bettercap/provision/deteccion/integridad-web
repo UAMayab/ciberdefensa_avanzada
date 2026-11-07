@@ -1,0 +1,22 @@
+#!/bin/sh
+# Miniworkshop Bettercap — Episodio 3 (detección en el propio equipo).
+# Compara lo que llega por HTTP con lo que llega por HTTPS de la MISMA página.
+# HTTPS autentica al servidor y protege la integridad; si el HTTP en claro
+# difiere, algo lo tocó en el camino. Si HTTPS falla, tampoco se puede
+# confiar en la comparación, y eso también es una alerta.
+#
+# Uso:  integridad-web [ruta ...]     (por defecto / y /static/app.js)
+RUTAS=${*:-"/ /static/app.js"}
+malo=0
+for r in $RUTAS; do
+  http=$(curl -s --max-time 10 "http://intranet.corp.lab$r"  | sha256sum | cut -c1-16)
+  https=$(curl -s --max-time 10 "https://intranet.corp.lab$r" 2>/dev/null | sha256sum | cut -c1-16)
+  if ! curl -s --max-time 10 -o /dev/null "https://intranet.corp.lab$r"; then
+    printf 'ALERTA   %-18s HTTPS no validó (¿certificado ajeno?)\n' "$r"; malo=1
+  elif [ "$http" = "$https" ]; then
+    printf 'OK       %-18s http=%s https=%s\n' "$r" "$http" "$https"
+  else
+    printf 'ALERTA   %-18s http=%s https=%s  <-- DISTINTOS\n' "$r" "$http" "$https"; malo=1
+  fi
+done
+exit $malo

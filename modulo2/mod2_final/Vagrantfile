@@ -1,0 +1,40 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Proyecto final del Módulo II — Sistema de Gobernanza y Gestión de Riesgo.
+# Una sola VM Ubuntu 24.04 con Apache + PHP + MariaDB que sirve la aplicación web (Bootstrap 5)
+# para hacer una evaluación de riesgos con NIST SP 800-30 Rev. 1.
+# Uso exclusivo en red aislada (host-only de VirtualBox). Ver README.md.
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "cloud-image/ubuntu-24.04"
+  config.vm.hostname = "grc-final"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # Red host-only 192.168.61.0/24: la misma del laboratorio Kaab, para poder tener ambos encendidos.
+  # El rango 192.168.56.0/21 es el que VirtualBox permite por defecto en Linux y macOS.
+  config.vm.network "private_network", ip: "192.168.61.30"
+
+  # Plan B si la red host-only no funciona en tu equipo: http://localhost:8080
+  config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1", auto_correct: true
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "mod2-final-grc"
+    vb.memory = 1024
+    vb.cpus = 1
+  end
+
+  # Limpia lo subido en una corrida anterior para que `vagrant provision` sea repetible.
+  config.vm.provision "shell", inline: "rm -rf /tmp/grc-app /tmp/grc-db"
+  config.vm.provision "file", source: "provision/app", destination: "/tmp/grc-app"
+  config.vm.provision "file", source: "provision/db", destination: "/tmp/grc-db"
+  config.vm.provision "shell", path: "provision/provision.sh"
+
+  config.vm.post_up_message = <<~MSG
+
+    Sistema de Gobernanza y Gestión de Riesgo listo.
+      Abre en tu navegador:  http://192.168.61.30/
+      Si no carga:           http://localhost:8080/
+    Tu trabajo vive dentro de la VM: descarga un respaldo (Configuración) antes de `vagrant destroy`.
+  MSG
+end

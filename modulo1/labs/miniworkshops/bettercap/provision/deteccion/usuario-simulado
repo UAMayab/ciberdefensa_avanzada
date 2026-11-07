@@ -1,0 +1,48 @@
+#!/bin/sh
+# Miniworkshop Bettercap — «Ana Canul trabajando».
+# Uso:  usuario-simulado once      un ciclo de trabajo y termina
+#       usuario-simulado bucle     ciclos cada $INTERVALO s (lo usa el servicio)
+#
+# Un ciclo hace lo que haría una persona en una oficina real: abre la intranet,
+# inicia sesión, entra al panel de soporte, baja un reporte por FTP y entra al
+# portal de pagos escribiendo la dirección SIN https://, como casi todo el
+# mundo. Cada paso resuelve su nombre por DNS (el resolvedor es gw).
+. /etc/usuario-simulado.conf
+
+CURL="curl -s --connect-timeout 5 --max-time 15 -o /dev/null"
+HSTS_CACHE=/var/lib/usuario-simulado.hsts
+
+ciclo() {
+  ts() { date '+%F %T'; }
+  echo "$(ts) ciclo: inicio"
+
+  # 1. Intranet por HTTP en claro: portada y login de formulario.
+  $CURL http://intranet.corp.lab/
+  $CURL -d "usuario=$INTRANET_USER&clave=$INTRANET_PASS" http://intranet.corp.lab/login
+  echo "$(ts) intranet: login enviado"
+
+  # 2. Panel de soporte: HTTP Basic (usuario:contraseña en base64, en claro).
+  $CURL -u "$ADMIN_USER:$ADMIN_PASS" http://intranet.corp.lab/admin/
+  echo "$(ts) admin: acceso enviado"
+
+  # 3. Reporte de flota por FTP en claro.
+  $CURL -u "$FTP_USER:$FTP_PASS" ftp://ftp.corp.lab/reporte-flota-2026-09.csv
+  echo "$(ts) ftp: descarga hecha"
+
+  # 4. Portal de pagos. Se teclea «pagos.corp.lab» sin esquema: el navegador
+  #    prueba http://, el servidor redirige a https:// y el formulario se
+  #    envía a donde haya terminado la navegación. Si alguien degradó esa
+  #    redirección, el POST sale en claro; esto es lo que hace un navegador.
+  HSTS=""
+  [ "$USAR_HSTS" = "yes" ] && HSTS="--hsts $HSTS_CACHE"
+  destino=$(curl -s -L $HSTS --connect-timeout 5 --max-time 15 -o /dev/null -w '%{url_effective}' http://pagos.corp.lab/)
+  destino=${destino%/}
+  $CURL $HSTS -d "usuario=$PAGOS_USER&clave=$PAGOS_PASS" "$destino/login"
+  echo "$(ts) pagos: login enviado a $destino/login"
+}
+
+case "${1:-once}" in
+  once)  ciclo ;;
+  bucle) while :; do ciclo; sleep "${INTERVALO:-30}"; done ;;
+  *)     echo "uso: usuario-simulado once|bucle" >&2; exit 2 ;;
+esac

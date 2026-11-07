@@ -1,0 +1,103 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Laboratorio del miniworkshop «Bettercap: del ARP al contenido»
+# Usado por: Episodio 1 (ARP spoofing y captura de credenciales),
+#            Episodio 2 (DNS spoofing y portal falso),
+#            Episodio 3 (alteración de contenido y degradación de TLS).
+# Ver README.md para topología, servicios, credenciales y uso ético.
+#
+# AISLAMIENTO: las dos redes del laboratorio son redes INTERNAS de VirtualBox
+# (virtualbox__intnet), no host-only. No tienen interfaz en tu máquina: lo que
+# hagas con ARP dentro de ellas no puede alcanzar ni a tu equipo ni a tu red.
+# Cada VM conserva además el adaptador NAT que Vagrant necesita para
+# `vagrant ssh`; al terminar el aprovisionamiento se le quita la ruta por
+# defecto (scripts/lab-rutas), así que el laboratorio queda sin salida.
+#
+#   LAN  bc-lan  10.70.10.0/24   gw .254  victima .20  atacante .66  sensor .250
+#   DMZ  bc-dmz  10.70.20.0/24   gw .254  srv .10
+
+LAN = "bc-lan"
+DMZ = "bc-dmz"
+
+# Alpine 3.24 (la última versión) en la caja cloud-image. Esa caja tiene cuatro
+# particularidades que el resto de cajas Alpine del repositorio no tienen:
+#   * arranca sólo en UEFI           -> --firmware efi
+#   * el usuario de Vagrant es «alpine» y no hay sudo ni bash, sólo doas y ash
+#   * la tarjeta PCnet que Vagrant pone por defecto NO tiene driver en el
+#     núcleo -virt de Alpine                          -> nic_type "82540EM"
+ALPINE = "cloud-image/alpine-3.24"
+UBUNTU = "cloud-image/ubuntu-26.04"
+
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # Fábrica de nodos Alpine: caja, usuario SSH, UEFI y los dos scripts.
+  alpine = lambda do |m, name, ram, script|
+    m.vm.box = ALPINE
+    m.vm.hostname = name
+    m.ssh.username = "alpine"
+    m.ssh.shell = "sh"
+    m.ssh.sudo_command = "doas %c"
+    m.vm.provider "virtualbox" do |vb|
+      vb.name = "miniws-bettercap-#{name}"
+      vb.memory = ram
+      vb.cpus = 1
+      vb.customize ["modifyvm", :id, "--firmware", "efi"]
+    end
+    # Los payloads (sitio web, TLS, scripts) viajan por SCP y se instalan
+    # desde /tmp/bc. Debe declararse ANTES del provisionador shell.
+    m.vm.provision "file", source: "provision", destination: "/tmp/bc"
+    m.vm.provision "shell", path: script
+    m.vm.provision "shell", run: "always", inline: "/usr/local/sbin/lab-rutas"
+  end
+
+  # --- gw: router entre LAN y DMZ, DNS del laboratorio ---
+  # eth1 = LAN, eth2 = DMZ. Es el «gateway» que el atacante va a suplantar.
+  config.vm.define "gw" do |gw|
+    alpine.call(gw, "gw", 256, "provision/gw.sh")
+    gw.vm.network "private_network", ip: "10.70.10.254", virtualbox__intnet: LAN, nic_type: "82540EM"
+    gw.vm.network "private_network", ip: "10.70.20.254", virtualbox__intnet: DMZ, nic_type: "82540EM"
+  end
+
+  # --- srv: los servidores corporativos de «Cenote Logística» ---
+  config.vm.define "srv" do |srv|
+    alpine.call(srv, "srv", 512, "provision/srv.sh")
+    srv.vm.network "private_network", ip: "10.70.20.10", virtualbox__intnet: DMZ, nic_type: "82540EM"
+  end
+
+  # --- victima: la estación de trabajo de Ana, con un usuario simulado ---
+  config.vm.define "victima" do |v|
+    alpine.call(v, "victima", 256, "provision/victima.sh")
+    v.vm.network "private_network", ip: "10.70.10.20", virtualbox__intnet: LAN, nic_type: "82540EM"
+  end
+
+  # --- sensor: el ojo del defensor ---
+  # Su NIC de laboratorio está en modo promiscuo («Allow All»): hace de puerto
+  # espejo (SPAN) de la LAN y ve las tramas de todos, no sólo las suyas.
+  config.vm.define "sensor" do |s|
+    alpine.call(s, "sensor", 1024, "provision/sensor.sh")
+    s.vm.network "private_network", ip: "10.70.10.250", virtualbox__intnet: LAN, nic_type: "82540EM"
+    s.vm.provider "virtualbox" do |vb|
+      vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+    end
+  end
+
+  # --- atacante: Ubuntu con Bettercap ---
+  # La caja cloud-image de Ubuntu importa con IO-APIC apagado: sin
+  # --ioapic on el invitado vería una sola CPU aunque pidas dos.
+  config.vm.define "atacante" do |a|
+    a.vm.box = UBUNTU
+    a.vm.hostname = "atacante"
+    a.vm.network "private_network", ip: "10.70.10.66", virtualbox__intnet: LAN, nic_type: "82540EM"
+    a.vm.provider "virtualbox" do |vb|
+      vb.name = "miniws-bettercap-atacante"
+      vb.memory = 1536
+      vb.cpus = 2
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    end
+    a.vm.provision "file", source: "provision", destination: "/tmp/bc"
+    a.vm.provision "shell", path: "provision/atacante.sh"
+    a.vm.provision "shell", run: "always", inline: "/usr/local/sbin/lab-rutas"
+  end
+end

@@ -1,0 +1,101 @@
+/* Sistema de Gobernanza y Gestión de Riesgo · estilos propios sobre Bootstrap 5.3 */
+:root {
+  --navy: #14213d;
+  --teal: #1b998b;
+  --bs-body-bg: #f4f6fa;
+  --bs-body-font-size: .95rem;
+}
+body { background: var(--bs-body-bg); }
+.card { border-color: #e1e5ee; box-shadow: 0 1px 2px rgba(20, 33, 61, .04); }
+.card-header { background: #fff; }
+
+/* Navegación */
+.app-nav { background: var(--navy); }
+.app-nav .brand-main { font-weight: 600; }
+.app-nav .brand-sub { color: #9fb0d0; font-size: .75rem; margin-top: 2px; max-width: 15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-nav .nav-link { color: #cdd6ea; border-radius: .5rem; white-space: nowrap; font-size: .9rem; padding-inline: .6rem; }
+.app-nav .brand-main { font-size: .95rem; }
+.app-nav .nav-link:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+.app-nav .nav-link.active { color: #fff; background: var(--teal); }
+.nav-count { background: rgba(255, 255, 255, .18); font-weight: 500; }
+
+/* Códigos y badges */
+.codigo { font-family: var(--bs-font-monospace); font-size: .8rem; background: #e9edf5; color: var(--navy); padding: .1rem .4rem; border-radius: .3rem; white-space: nowrap; }
+.badge-nivel { font-weight: 600; }
+.text-bg-orange { background: #f08a24; color: #1f2937; }
+.celda-desc { max-width: 38rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.flex-fill-min { flex: 1 1 18rem; min-width: 0; }
+.dot { display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; vertical-align: middle; }
+.steps li { margin-bottom: .25rem; }
+
+/* Ayuda NIST */
+.ayuda-card { border-left: 4px solid var(--teal); }
+.ayuda-card .card-header { background: #eefaf8; cursor: pointer; user-select: none; }
+.ayuda-card.cerrada .card-body { display: none; }
+.ayuda-card.cerrada .ayuda-chevron { transform: rotate(180deg); }
+.ayuda-chevron { transition: transform .15s; margin-left: .25rem; }
+
+/* Tablero */
+.global-level { font-size: 2rem; font-weight: 700; text-align: center; padding: 1.25rem .5rem; border-radius: .75rem; letter-spacing: .02em; }
+.scale { display: flex; gap: 4px; }
+.scale-seg { flex: 1; height: 10px; border-radius: 5px; opacity: .3; }
+.scale-seg.on { opacity: 1; height: 16px; margin-top: -3px; box-shadow: 0 0 0 2px var(--navy); }
+.scale-labels { display: flex; justify-content: space-between; font-size: .7rem; color: #6c757d; margin-top: 4px; }
+.stat-card { color: inherit; transition: transform .1s, box-shadow .1s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(20, 33, 61, .1); }
+.stat-icon { width: 3.25rem; height: 3.25rem; border-radius: .75rem; display: grid; place-items: center; font-size: 1.5rem; }
+.stat-num { font-size: 2rem; font-weight: 700; line-height: 1; display: block; }
+.stacked-bar { height: 1.6rem; }
+.stacked-bar .progress-bar { font-weight: 600; }
+.empty-state { text-align: center; padding: 3rem 1rem; color: #6c757d; background: #fff; border: 2px dashed #d5dbe8; border-radius: .75rem; }
+.empty-state > i { font-size: 2.5rem; display: block; margin-bottom: .5rem; }
+
+/* Mapa de calor */
+.heatmap-wrap { display: flex; align-items: stretch; gap: .5rem; }
+.heatmap-ylabel { writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; font-weight: 600; color: var(--navy); letter-spacing: .05em; }
+.heatmap-main { flex: 1; min-width: 0; }
+.heatmap { width: 100%; border-collapse: separate; border-spacing: 4px; table-layout: fixed; }
+.heatmap-axis { font-size: .72rem; font-weight: 500; color: #4b5563; text-align: center; vertical-align: middle; width: 5.2rem; line-height: 1.15; }
+.heatmap tfoot .heatmap-axis { width: auto; padding-top: .25rem; }
+.heatmap-axis .num { display: block; font-weight: 700; font-size: .9rem; color: var(--navy); }
+.heatmap-cell { background: color-mix(in srgb, var(--cell) 42%, #fff); border-radius: .5rem; height: 4.3rem; vertical-align: top; padding: 4px; border: 1px solid color-mix(in srgb, var(--cell) 70%, #fff); }
+.heatmap-chips { display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; }
+.heatmap-xlabel { text-align: center; font-weight: 600; color: var(--navy); letter-spacing: .05em; margin-top: .25rem; }
+.heatmap-legend { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin-top: .75rem; font-size: .8rem; }
+
+/* Fichas de riesgo: el color cuenta el estado, el icono lo repite (no depender solo del color) */
+.risk-chip { display: inline-flex; align-items: center; gap: .25rem; font-size: .7rem; font-weight: 600; padding: .12rem .4rem; border-radius: 1rem; border: 2px solid transparent; text-decoration: none; white-space: nowrap; line-height: 1.2; }
+a.risk-chip:hover { filter: brightness(.92); transform: scale(1.05); }
+.st-1 { background: #1f2937; color: #fff; border-color: #1f2937; }
+.st-2 { background: #fff; color: #0b5ed7; border-color: #0b5ed7; }
+.st-3 { background: #fff; color: #146c43; border-color: #146c43; }
+.st-4 { background: #fff; color: #6f42c1; border-color: #6f42c1; }
+.st-5 { background: #e9ecef; color: #6c757d; border: 2px dashed #adb5bd; text-decoration: line-through; }
+
+/* Nivel en vivo del formulario de riesgo */
+.nivel-vivo { border: 2px dashed #d5dbe8; border-radius: .6rem; padding: .75rem; text-align: center; min-height: 5rem; display: grid; place-items: center; }
+.nivel-vivo .global-level { font-size: 1.4rem; padding: .5rem 1rem; }
+
+/* Reporte */
+.reporte { background: #fff; border: 1px solid #e1e5ee; border-radius: .75rem; padding: 1.5rem; }
+.reporte-head { border-bottom: 3px solid var(--teal); padding-bottom: .75rem; margin-bottom: 1rem; }
+.tabla-reporte td, .tabla-reporte th { vertical-align: top; }
+.tabla-reporte tbody tr { border-left: 5px solid var(--borde); }
+.tabla-reporte td:first-child { border-left: 5px solid var(--borde); }
+
+/* Impresión / guardar como PDF */
+@page { size: A4; margin: 12mm; }
+@media print {
+  body { background: #fff; font-size: 10.5pt; }
+  .app-nav, footer, .d-print-none, .modal { display: none !important; }
+  main.container-xl { max-width: 100%; padding: 0 !important; }
+  .reporte { border: 0; padding: 0; }
+  *, *::before, *::after { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .tabla-reporte tr, .card, .salto-evitar { break-inside: avoid; }
+  .heatmap-cell { height: 4.2rem; }
+  .celda-desc { -webkit-line-clamp: unset; display: block; max-width: none; }
+}
+@media (max-width: 575px) {
+  .heatmap-axis { width: 3.2rem; font-size: .6rem; }
+  .heatmap-cell { height: 4rem; }
+}

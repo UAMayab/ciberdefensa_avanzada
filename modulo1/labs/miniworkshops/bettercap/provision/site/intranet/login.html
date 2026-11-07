@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Acceso · Intranet Cenote Logística</title>
+<!-- Cenote Logística S.A. de C.V. es una EMPRESA FICTICIA. Laboratorio UAM. -->
+<link rel="stylesheet" href="/static/estilos.css">
+<script src="/static/app.js"></script>
+</head>
+<body>
+<header>
+  <strong>Intranet · Cenote Logística</strong>
+  <nav><a href="/">Inicio</a><a href="/noticias.html">Noticias</a><a href="/directorio.html">Directorio</a><a href="/login.html">Acceso</a><a href="/admin/">Soporte TI</a></nav>
+</header>
+<main>
+<div class="caja"><h1>Acceso a la intranet</h1>
+<form method="post" action="/login">
+<label for="usuario">Usuario</label><input id="usuario" name="usuario" autocomplete="username">
+<label for="clave">Contraseña</label><input id="clave" name="clave" type="password" autocomplete="current-password">
+<button type="submit">Entrar</button></form></div>
+</main>
+<footer>Cenote Logística S.A. de C.V. · Mérida, Yucatán · <span id="fecha"></span></footer>
+</body>
+</html>

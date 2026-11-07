@@ -1,0 +1,15 @@
+/* Cenote Logística S.A. de C.V. — EMPRESA FICTICIA (laboratorio de la UAM). */
+:root { --verde:#0b6b4f; --gris:#f3f5f4; --texto:#1e2a26; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: system-ui, sans-serif; color:var(--texto); background:var(--gris); }
+header { background:var(--verde); color:#fff; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; }
+header a { color:#fff; margin-left:18px; text-decoration:none; }
+main, .caja { max-width:860px; margin:24px auto; padding:0 20px; }
+.caja { background:#fff; border-radius:8px; padding:24px; box-shadow:0 1px 3px #0002; }
+h1 { margin-top:0; }
+form label { display:block; margin:12px 0 4px; }
+form input { width:100%; padding:8px; border:1px solid #9aa8a2; border-radius:4px; }
+form button { margin-top:16px; padding:9px 18px; background:var(--verde); color:#fff; border:0; border-radius:4px; cursor:pointer; }
+table { border-collapse:collapse; width:100%; background:#fff; }
+td, th { border-bottom:1px solid #dde3e0; padding:8px; text-align:left; }
+footer { text-align:center; font-size:.8rem; color:#5d6b65; margin:32px 0; }
